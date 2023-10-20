@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS admindata;
+DROP TABLE IF EXISTS usdtngnrate;
+DROP TABLE IF EXISTS ratecalculator;
+DROP TABLE IF EXISTS coinswap;
+DROP TABLE IF EXISTS customerasset;
+DROP TABLE IF EXISTS customerkyc;
+DROP TABLE IF EXISTS customer;
