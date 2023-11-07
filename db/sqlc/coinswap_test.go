@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRandomCoinSwap(t *testing.T) Coinswap {
+func createRandomCoinSwap(t *testing.T) CreateSwapRow {
 	customer := createRandomCustomer(t)
 	network := utils.RandomCoinNetwork()
 	coinaddress := utils.RandomCoinAddress(network).String
@@ -25,7 +25,7 @@ func createRandomCoinSwap(t *testing.T) Coinswap {
 		CurrentUsdtNgnRate: fmt.Sprintf("%v", coinswaprate),
 		CustomerID: customer.ID,
 		NgnEquivalent: fmt.Sprintf("%.8f", coinswapamount * coinswaprate),
-		PayoutStatus: utils.RandomPayoutStatus(),
+		// PayoutStatus: utils.RandomPayoutStatus(),
 		BankAccName: utils.RandomBankName(),
 		BankAccNumber: utils.RandomBankAccount(),
 		BankCode: utils.RandomBankCode(),
@@ -42,13 +42,11 @@ func createRandomCoinSwap(t *testing.T) Coinswap {
 	require.Equal(t, arg.CurrentUsdtNgnRate, coinswap.CurrentUsdtNgnRate)
 	require.Equal(t, arg.CustomerID, coinswap.CustomerID)
 	require.Equal(t, arg.NgnEquivalent, coinswap.NgnEquivalent)
-	require.Equal(t, arg.PayoutStatus, coinswap.PayoutStatus)
 	require.Equal(t, arg.BankAccName, coinswap.BankAccName)
 	require.Equal(t, arg.BankAccNumber, coinswap.BankAccNumber)
 	require.Equal(t, arg.BankCode, coinswap.BankCode)
 	require.NotZero(t, coinswap.ID)
 	require.NotZero(t, coinswap.CreatedAt)
-	require.NotZero(t, coinswap.UpdatedAt)
 	return coinswap
 }
 

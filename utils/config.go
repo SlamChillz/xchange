@@ -5,7 +5,7 @@ import (
 )
 
 // Configuration struct that holds the configuration for the software
-type config struct {
+type Config struct {
 	DBDriver string `mapstructure:"DBDRIVER"`
 	DBURL   string `mapstructure:"DBURL"`
 	DBName string `mapstructure:"DBNAME"`
@@ -13,10 +13,14 @@ type config struct {
 	DBPassword string `mapstructure:"DBPASSWORD"`
 	DBHost string `mapstructure:"DBHOST"`
 	DBPort string `mapstructure:"DBPORT"`
+	SHUTTER_PUBLIC_KEY string `mapstructure:"SHUTTER_PUBLIC_KEY"`
+	BITPOWR_ACCOUNT_ID string `mapstructure:"BITPOWR_ACCOUNT_ID"`
+	BITPOWR_API_KEY string `mapstructure:"BITPOWR_API_KEY"`
+	VALIDATE_BANK_URL string `mapstructure:"VALIDATE_BANK_URL"`
 }
 
 // LoadConfig loads the configuration from the config file or environment variables
-func LoadConfig(configFilePath string) (conf config, err error) {
+func LoadConfig(configFilePath string) (conf Config, err error) {
 	viper.AddConfigPath(configFilePath)
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")

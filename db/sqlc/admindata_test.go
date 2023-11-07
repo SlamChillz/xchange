@@ -9,14 +9,14 @@ import (
 )
 
 func createRandomAdmindata(t *testing.T) Admindatum {
-	arg := createAdmindataParams {
+	arg := CreateAdmindataParams {
 		BitpowrAccountID: utils.RandomString(10),
 		BtcAddress: utils.RandomBtcAddress(),
 		UsdtAddress: utils.RandomUsdtAddress(),
 		UsdtTronAddress: utils.RandomUsdtTronAddress(),
 	}
 
-	admindata, err := testQueries.createAdmindata(context.Background(), arg)
+	admindata, err := testQueries.CreateAdmindata(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, admindata)
 	require.Equal(t, arg.BitpowrAccountID, admindata.BitpowrAccountID)

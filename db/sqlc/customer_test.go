@@ -9,6 +9,7 @@ import (
 )
 
 func createRandomCustomer(t *testing.T) Customer {
+	// hashedPassword := utils.RandomString(8)
 	arg := CreateCustomerParams{
 		FirstName: utils.RandomName(),
 		LastName:  utils.RandomName(),

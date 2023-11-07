@@ -1,4 +1,4 @@
--- name: createAdmindata :one
+-- name: CreateAdmindata :one
 iNSERT INTO admindata (
     bitpowr_account_id,
     btc_address,
