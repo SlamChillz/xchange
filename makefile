@@ -19,6 +19,11 @@ migrateup:
 migratedown:
 	migrate -path db/migrations -database "${DBDRIVER}://${DBUSER}:${DBPASSWORD}@${DBHOST}:${DBPORT}/${DBNAME}?sslmode=disable" -verbose down
 
+mock:
+	@echo "Generating mock..."
+	@mockgen -package mockdb -destination db/mock/storage.go github.com/slamchillz/xchange/db/sqlc Store
+	@echo "Mock generated."
+
 sqlcinstall:
 	@echo "Installing sqlc..."
 	@docker pull sqlc/sqlc
