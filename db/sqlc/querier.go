@@ -14,6 +14,7 @@ type Querier interface {
 	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error)
 	CreateSwap(ctx context.Context, arg CreateSwapParams) (CreateSwapRow, error)
 	GetBtcAddress(ctx context.Context, customerID int32) (sql.NullString, error)
+	GetCustomerByEmail(ctx context.Context, email string) (Customer, error)
 	GetPendingNetworkTransaction(ctx context.Context, arg GetPendingNetworkTransactionParams) (int64, error)
 	GetUsdtAddress(ctx context.Context, customerID int32) (sql.NullString, error)
 	GetUsdtBscAddress(ctx context.Context, customerID int32) (sql.NullString, error)

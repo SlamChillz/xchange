@@ -100,6 +100,21 @@ func (mr *MockStoreMockRecorder) GetBtcAddress(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBtcAddress", reflect.TypeOf((*MockStore)(nil).GetBtcAddress), arg0, arg1)
 }
 
+// GetCustomerByEmail mocks base method.
+func (m *MockStore) GetCustomerByEmail(arg0 context.Context, arg1 string) (db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCustomerByEmail", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCustomerByEmail indicates an expected call of GetCustomerByEmail.
+func (mr *MockStoreMockRecorder) GetCustomerByEmail(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerByEmail", reflect.TypeOf((*MockStore)(nil).GetCustomerByEmail), arg0, arg1)
+}
+
 // GetPendingNetworkTransaction mocks base method.
 func (m *MockStore) GetPendingNetworkTransaction(arg0 context.Context, arg1 db.GetPendingNetworkTransactionParams) (int64, error) {
 	m.ctrl.T.Helper()

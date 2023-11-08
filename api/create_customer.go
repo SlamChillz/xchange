@@ -19,7 +19,7 @@ type CreateCustomerRequest struct {
 	ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=Password"`
 }
 
-type CreateCustomerResponse struct {
+type CustomerResponse struct {
 	FirstName 		string 		   `json:"first_name"`
 	LastName 		string 		   `json:"last_name"`
 	Email 			string 		   `json:"email"`
@@ -61,7 +61,13 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 		}
 		return
 	}
-	resp := CreateCustomerResponse{
+	resp := CreateCustomerResponse(customer)
+	// TODO: Send verification email to customer
+	ctx.JSON(http.StatusOK, resp)
+}
+
+func CreateCustomerResponse(customer db.Customer) CustomerResponse {
+	return CustomerResponse{
 		FirstName: customer.FirstName,
 		LastName: customer.LastName,
 		Email: customer.Email,
@@ -72,6 +78,4 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 		CreatedAt: customer.CreatedAt,
 		UpdatedAt: customer.UpdatedAt,
 	}
-	// TODO: Send verification email to customer
-	ctx.JSON(http.StatusOK, resp)
 }

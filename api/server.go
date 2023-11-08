@@ -37,6 +37,7 @@ func (server *Server) ConfigRouter() {
 	router := gin.Default()
 	router.POST("/api/v1/swap", server.CoinSwap)
 	router.POST("/api/v1/users/signup", server.CreateCustomer)
+	router.POST("/api/v1/users/login", server.LoginCustomer)
 	server.router = router
 }
 
