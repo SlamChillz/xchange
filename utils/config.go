@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"time"
+
 	"github.com/spf13/viper"
 )
 
@@ -13,6 +15,8 @@ type Config struct {
 	DBPassword string `mapstructure:"DBPASSWORD"`
 	DBHost string `mapstructure:"DBHOST"`
 	DBPort string `mapstructure:"DBPORT"`
+	JWT_SECRET string `mapstructure:"JWT_SECRET"`
+	JWT_ACCESS_TOKEN_DURATION time.Duration `mapstructure:"JWT_TOKEN_DURATION"`
 	SHUTTER_PUBLIC_KEY string `mapstructure:"SHUTTER_PUBLIC_KEY"`
 	BITPOWR_ACCOUNT_ID string `mapstructure:"BITPOWR_ACCOUNT_ID"`
 	BITPOWR_API_KEY string `mapstructure:"BITPOWR_API_KEY"`
