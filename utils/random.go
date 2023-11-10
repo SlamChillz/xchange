@@ -87,6 +87,10 @@ func RandomString(n int) string {
 	return stringBuilder.String()
 }
 
+func RandomNumber() int32 {
+	return int32(RandomInt(0, 100) + RandomInt(100, 200))
+}
+
 // RandomName genrates a random name
 func RandomName() string {
 	charset = laplhas
