@@ -40,7 +40,7 @@ func (server *Server) LoginCustomer(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
-	accessToken, _, err := server.token.CreateToken(customer.Email, server.config.JWT_ACCESS_TOKEN_DURATION)
+	accessToken, _, err := server.token.CreateToken(customer.ID, server.config.JWT_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		// log the error
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
