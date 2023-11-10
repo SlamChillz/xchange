@@ -18,6 +18,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	db "github.com/slamchillz/xchange/db/sqlc"
+	"github.com/slamchillz/xchange/token"
 	"github.com/slamchillz/xchange/utils"
 )
 
@@ -140,8 +141,9 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": req.FieldErrors})
 		return
 	}
+	customerPayload := ctx.MustGet(AUTHENTICATIONCONTEXTKEY).(*token.Payload)
 	arg := db.GetPendingNetworkTransactionParams{
-		CustomerID: 1,
+		CustomerID: customerPayload.CustomerID,
 		Network: req.Network,
 		TransactionStatus: "PENDING",
 	}
