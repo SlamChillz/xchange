@@ -8,17 +8,17 @@ import (
 )
 
 type Payload struct {
-	UserEmail string `json:"user_email"`
+	CustomerID int32 `json:"customer_id"`
 	jwt.RegisteredClaims
 }
 
-func NewPayload(userEmail string, duration time.Duration) (*Payload, error) {
+func NewPayload(customerId int32, duration time.Duration) (*Payload, error) {
 	tokenId, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
 	}
 	payload := &Payload{
-		UserEmail: userEmail,
+		CustomerID: customerId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID: tokenId.String(),
 			IssuedAt: jwt.NewNumericDate(time.Now()),

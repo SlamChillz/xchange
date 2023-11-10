@@ -13,12 +13,12 @@ func TestValidJWT(t *testing.T) {
 	jwt, err := NewJWT(utils.RandomString(32))
 	require.NoError(t, err)
 	require.NotEmpty(t, jwt)
-	userEmail := utils.RandomEmail()
+	customerId := utils.RandomNumber()
 	duration := time.Minute
 	issuedAt := time.Now()
 	expiredAt := issuedAt.Add(duration)
 
-	tokenString, payload, err := jwt.CreateToken(userEmail, duration)
+	tokenString, payload, err := jwt.CreateToken(customerId, duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, tokenString)
 	require.NotEmpty(t, payload)
@@ -27,13 +27,13 @@ func TestValidJWT(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, payload)
 	require.NotZero(t, payload.ID)
-	require.Equal(t, userEmail, payload.UserEmail)
+	require.Equal(t, customerId, payload.CustomerID)
 	require.WithinDuration(t, issuedAt, payload.RegisteredClaims.IssuedAt.Time, time.Second)
 	require.WithinDuration(t, expiredAt, payload.RegisteredClaims.ExpiresAt.Time, time.Second)
 }
 
 func TestInvalidJWT(t *testing.T) {
-	payload, err := NewPayload(utils.RandomEmail(), time.Minute)
+	payload, err := NewPayload(utils.RandomNumber(), time.Minute)
 	require.NoError(t, err)
 	require.NotEmpty(t, payload)
 
@@ -55,7 +55,7 @@ func TestExpiredJWT(t *testing.T) {
 	jwtToken, err := NewJWT(utils.RandomString(32))
 	require.NoError(t, err)
 
-	tokenString, payload, err := jwtToken.CreateToken(utils.RandomEmail(), -time.Minute)
+	tokenString, payload, err := jwtToken.CreateToken(utils.RandomNumber(), -time.Minute)
 	require.NoError(t, err)
 	require.NotEmpty(t, tokenString)
 	require.NotEmpty(t, payload)

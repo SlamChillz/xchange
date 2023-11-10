@@ -24,8 +24,8 @@ func NewJWT(secretKey string) (*JWT, error) {
 	return &JWT{secretKey}, nil
 }
 
-func (jwtoken *JWT) CreateToken(useremail string, duration time.Duration) (string, *Payload, error) {
-	payload, err := NewPayload(useremail, duration)
+func (jwtoken *JWT) CreateToken(customerId int32, duration time.Duration) (string, *Payload, error) {
+	payload, err := NewPayload(customerId, duration)
 	if err != nil {
 		return "", payload, err
 	}
