@@ -54,9 +54,10 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 		Password: hashedPassword,
 	})
 	if err != nil {
-		if err.(*pq.Error).Code == "23505" {
+		if pgErr, ok := err.(*pq.Error); ok && pgErr.Code == "23505"{
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "email or phone number already exists"})
 		} else {
+			// log the error
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
