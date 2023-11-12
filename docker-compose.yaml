@@ -1,0 +1,36 @@
+version: '3.9'
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - .container.env
+    depends_on:
+      - postgres
+    entrypoint: ["/app/start.sh"]
+    command: /app/main
+    networks:
+      - backend
+
+  postgres:
+    image: postgres:12-alpine
+    ports:
+      - "5432:5432"
+    env_file:
+      - .postgres.env
+    volumes:
+      - xchange-postgres-data:/var/lib/postgresql/data/
+    networks:
+      - backend
+
+volumes:
+  xchange-postgres-data:
+    name: xchange-postgres-database-volume
+
+networks:
+  backend:
+    name: api-postgres-network
+    driver: bridge
