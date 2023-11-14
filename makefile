@@ -47,4 +47,13 @@ test:
 server:
 	go run main.go
 
-.PHONY: createdb dropdb postgres migrateup migratedown sqlcinstall sqlcinit sqlcgenerate mock test server
+proto:
+	rm -rf pb/*.go
+	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
+	--go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+	proto/*.proto
+
+evans:
+	evans -r repl
+
+.PHONY: createdb dropdb postgres migrateup migratedown sqlcinstall sqlcinit sqlcgenerate mock test server proto
