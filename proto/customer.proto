@@ -14,7 +14,7 @@ message Customer {
   string phone = 5;
   bool is_active = 6;
   bool is_staff = 7;
-  bool is_supercutomer = 8;
+  bool is_supercustomer = 8;
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
 }
