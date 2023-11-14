@@ -20,6 +20,7 @@ type CreateCustomerRequest struct {
 }
 
 type CustomerResponse struct {
+	ID 				int32 		   `json:"id"`
 	FirstName 		string 		   `json:"first_name"`
 	LastName 		string 		   `json:"last_name"`
 	Email 			string 		   `json:"email"`
@@ -69,6 +70,7 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 
 func CreateCustomerResponse(customer db.Customer) CustomerResponse {
 	return CustomerResponse{
+		ID: customer.ID,
 		FirstName: customer.FirstName,
 		LastName: customer.LastName,
 		Email: customer.Email,

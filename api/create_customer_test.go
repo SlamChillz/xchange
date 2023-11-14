@@ -48,6 +48,7 @@ func TestCreateCustomerRequest(t *testing.T) {
 	hashedPassword, err := utils.HashPassword(password)
 	require.NoError(t, err)
 	customer := db.Customer {
+		ID: utils.RandomNumber(),
 		FirstName: "John",
 		LastName: "Benjamin",
 		Email: "slamchillz@gmail.com",
