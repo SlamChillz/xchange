@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/slamchillz/xchange/pb";
+
+
+message CoinSwapRequest {
+    string coin_name = 1;
+    string coin_amount_to_swap = 2;
+    string network = 3;
+    string phone_number = 4;
+    string bank_acc_name = 5;
+    string bank_acc_number = 6;
+    string bank_acc_code = 7;
+}
+
+message CoinSwapResponse {
+    int32 id = 1;
+    string coin_name = 2;
+    string coin_amount_to_swap = 3;
+    string network = 4;
+    string phone_number = 5;
+    string coin_address = 6;
+    string transaction_ref = 7;
+    string transaction_status = 8;
+    string current_usdt_ngn_rate = 9;
+    int32 customer_id = 10;
+    string ngn_equivalent = 11;
+    string bank_acc_name = 12;
+    string bank_acc_number = 13;
+    string bank_code = 14;
+    google.protobuf.Timestamp created_at = 15;
+}

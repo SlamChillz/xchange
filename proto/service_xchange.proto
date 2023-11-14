@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+import "rpc_create_customer.proto";
+import "rpc_login_customer.proto";
+import "rpc_create_swap.proto";
+
+option go_package = "github.com/slamchillz/xchange/pb";
+
+service Xchange {
+  rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse) {}
+  rpc LoginCustomer(LoginCustomerRequest) returns (LoginCustomerResponse) {}
+  rpc CoinSwap(CoinSwapRequest) returns (CoinSwapResponse) {}
+}
