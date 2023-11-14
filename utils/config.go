@@ -15,6 +15,8 @@ type Config struct {
 	DBPassword string `mapstructure:"DBPASSWORD"`
 	DBHost string `mapstructure:"DBHOST"`
 	DBPort string `mapstructure:"DBPORT"`
+	HTTPServerAddress string `mapstructure:"HTTP_SERVER_ADDRESS"`
+	GRPCServerAddress string `mapstructure:"GRPC_SERVER_ADDRESS"`
 	JWT_SECRET string `mapstructure:"JWT_SECRET"`
 	JWT_ACCESS_TOKEN_DURATION time.Duration `mapstructure:"JWT_ACCESS_TOKEN_DURATION"`
 	SHUTTER_PUBLIC_KEY string `mapstructure:"SHUTTER_PUBLIC_KEY"`
