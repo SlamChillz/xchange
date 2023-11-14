@@ -44,4 +44,7 @@ test:
 	@go test -v -cover ./...
 	@echo "Tested."
 
-.PHONY: createdb dropdb postgres migrateup migratedown sqlcinstall sqlcinit sqlcgenerate
+server:
+	go run main.go
+
+.PHONY: createdb dropdb postgres migrateup migratedown sqlcinstall sqlcinit sqlcgenerate mock test server
