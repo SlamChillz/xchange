@@ -16,7 +16,7 @@ type LoginCustomerRequest struct {
 
 type LoginCustomerResponse struct {
 	AccessToken string `json:"access_token"`
-	User CustomerResponse `json:"user"`
+	Customer CustomerResponse `json:"user"`
 }
 
 func (server *Server) LoginCustomer(ctx *gin.Context) {
@@ -48,7 +48,7 @@ func (server *Server) LoginCustomer(ctx *gin.Context) {
 	}
 	resp := LoginCustomerResponse{
 		AccessToken: accessToken,
-		User: CreateCustomerResponse(customer),
+		Customer: CreateCustomerResponse(customer),
 	}
 	ctx.JSON(http.StatusOK, resp)
 }
