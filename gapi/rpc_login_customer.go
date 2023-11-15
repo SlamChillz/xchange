@@ -16,7 +16,7 @@ func (server *Server) LoginCustomer(ctx context.Context, req *pb.LoginCustomerRe
 	customer, err := server.storage.GetCustomerByEmail(ctx, req.Email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, status.Errorf(codes.NotFound, "customer does not found")
+			return nil, status.Errorf(codes.NotFound, "customer not found")
 		}
 		// log the error
 		return nil, status.Errorf(codes.Internal, fmt.Sprintf("Internal server error: %v", err.Error()))
