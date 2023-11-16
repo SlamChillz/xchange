@@ -83,8 +83,13 @@ func runGatewayServer(config utils.Config) {
 	if err != nil {
 		log.Fatal("cannot register gateway server:", err)
 	}
+
 	mux := http.NewServeMux()
 	mux.Handle("/", grpcServerMux)
+
+	fileServer := http.FileServer(http.Dir("./docs/gateway/swagger"))
+	mux.Handle("/docs/", http.StripPrefix("/docs/", fileServer))
+
 	listener, err := net.Listen("tcp", config.HTTPServerAddress)
 	if err != nil {
 		log.Fatal("cannot create listener for gateway server:", err)

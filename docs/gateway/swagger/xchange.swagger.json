@@ -1,0 +1,263 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Xchange API",
+    "version": "1.0",
+    "contact": {
+      "name": "Mendy Slam",
+      "url": "https://github.com/slamchillz/xchange",
+      "email": "mendyslam@gmail.com"
+    }
+  },
+  "tags": [
+    {
+      "name": "Xchange"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/users/login": {
+      "post": {
+        "operationId": "Xchange_LoginCustomer",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbLoginCustomerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbLoginCustomerRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Xchange"
+        ]
+      }
+    },
+    "/v1/users/signup": {
+      "post": {
+        "operationId": "Xchange_CreateCustomer",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCreateCustomerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbCreateCustomerRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Xchange"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "pbCoinSwapResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "coinName": {
+          "type": "string"
+        },
+        "coinAmountToSwap": {
+          "type": "string"
+        },
+        "network": {
+          "type": "string"
+        },
+        "phoneNumber": {
+          "type": "string"
+        },
+        "coinAddress": {
+          "type": "string"
+        },
+        "transactionRef": {
+          "type": "string"
+        },
+        "transactionStatus": {
+          "type": "string"
+        },
+        "currentUsdtNgnRate": {
+          "type": "string"
+        },
+        "customerId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ngnEquivalent": {
+          "type": "string"
+        },
+        "bankAccName": {
+          "type": "string"
+        },
+        "bankAccNumber": {
+          "type": "string"
+        },
+        "bankCode": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pbCreateCustomerRequest": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "phoneNumber": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "confirmPassword": {
+          "type": "string"
+        }
+      }
+    },
+    "pbCreateCustomerResponse": {
+      "type": "object",
+      "properties": {
+        "customer": {
+          "$ref": "#/definitions/pbCustomer"
+        }
+      }
+    },
+    "pbCustomer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "isStaff": {
+          "type": "boolean"
+        },
+        "isSupercustomer": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pbLoginCustomerRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "pbLoginCustomerResponse": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string"
+        },
+        "customer": {
+          "$ref": "#/definitions/pbCustomer"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
