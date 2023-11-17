@@ -31,7 +31,7 @@ type Coinswap struct {
 	TransactionStatus  string         `json:"transaction_status"`
 	CurrentUsdtNgnRate string         `json:"current_usdt_ngn_rate"`
 	CustomerID         int32          `json:"customer_id"`
-	NgnEquivalent      string         `json:"ngn_equivalent"`
+	NgnEquivalent      sql.NullString `json:"ngn_equivalent"`
 	PayoutStatus       string         `json:"payout_status"`
 	BankAccName        string         `json:"bank_acc_name"`
 	BankAccNumber      string         `json:"bank_acc_number"`
