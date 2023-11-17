@@ -12,7 +12,7 @@ import (
 type Querier interface {
 	CreateAdmindata(ctx context.Context, arg CreateAdmindataParams) (Admindatum, error)
 	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error)
-	CreateSwap(ctx context.Context, arg CreateSwapParams) (CreateSwapRow, error)
+	CreateSwap(ctx context.Context, arg CreateSwapParams) (Coinswap, error)
 	GetBtcAddress(ctx context.Context, customerID int32) (sql.NullString, error)
 	GetCustomerByEmail(ctx context.Context, email string) (Customer, error)
 	GetPendingNetworkTransaction(ctx context.Context, arg GetPendingNetworkTransactionParams) (int64, error)
@@ -25,7 +25,8 @@ type Querier interface {
 	InsertNewUsdtTronAddress(ctx context.Context, arg InsertNewUsdtTronAddressParams) (Customerasset, error)
 	RecentUsdtNgnRate(ctx context.Context, usdtNgnRate string) (Usdtngnrate, error)
 	UpdateBtcAddress(ctx context.Context, arg UpdateBtcAddressParams) (Customerasset, error)
-	UpdateSwap(ctx context.Context, arg UpdateSwapParams) (Coinswap, error)
+	UpdateSwapWithBitpowrInfo(ctx context.Context, arg UpdateSwapWithBitpowrInfoParams) (Coinswap, error)
+	UpdateSwapWithShutterInfo(ctx context.Context, arg UpdateSwapWithShutterInfoParams) (Coinswap, error)
 	UpdateUsdtAddress(ctx context.Context, arg UpdateUsdtAddressParams) (Customerasset, error)
 	UpdateUsdtBscAddress(ctx context.Context, arg UpdateUsdtBscAddressParams) (Customerasset, error)
 	UpdateUsdtTronAddress(ctx context.Context, arg UpdateUsdtTronAddressParams) (Customerasset, error)
