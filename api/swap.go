@@ -172,10 +172,6 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 		}
 	}
 	currentUsdtRate := utils.RandomCoinswapRate()
-	ngnEquivalent := req.CoinAmountToSwap * currentUsdtRate
-	if strings.ToUpper(req.CoinName) == "BTC" {
-		ngnEquivalent = ngnEquivalent * req.btcUsdRate
-	}
 	swapDetails, err := server.storage.CreateSwap(context.Background(), db.CreateSwapParams{
 		CoinName: req.CoinName,
 		CoinAmountToSwap: fmt.Sprintf("%f", req.CoinAmountToSwap),
@@ -186,7 +182,6 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 		TransactionStatus: "PENDING",
 		CurrentUsdtNgnRate: fmt.Sprintf("%f", currentUsdtRate),
 		CustomerID: arg.CustomerID,
-		NgnEquivalent: fmt.Sprintf("%f", ngnEquivalent),
 		BankAccName: req.BankAccName,
 		BankAccNumber: req.BankAccNumber,
 		BankCode: req.BankCode,

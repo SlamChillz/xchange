@@ -66,7 +66,7 @@ func TestCoinSwapRequest(t *testing.T) {
 					Times(1)
 				storage.EXPECT().
 					CreateSwap(gomock.Any(), gomock.Any()).
-					Return(db.CreateSwapRow{}, nil).
+					Return(db.Coinswap{}, nil).
 					Times(1)
 				storage.EXPECT().
 					InsertNewBtcAddress(gomock.Any(), gomock.Any()).
