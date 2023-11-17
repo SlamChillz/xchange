@@ -15,6 +15,7 @@ type Config struct {
 	DBPassword string `mapstructure:"DBPASSWORD"`
 	DBHost string `mapstructure:"DBHOST"`
 	DBPort string `mapstructure:"DBPORT"`
+	MigrationURL string `mapstructure:"MIGRATION_URL"`
 	HTTPServerAddress string `mapstructure:"HTTP_SERVER_ADDRESS"`
 	GRPCServerAddress string `mapstructure:"GRPC_SERVER_ADDRESS"`
 	JWT_SECRET string `mapstructure:"JWT_SECRET"`
@@ -30,7 +31,7 @@ func LoadConfig(configFilePath string) (conf Config, err error) {
 	viper.AddConfigPath(configFilePath)
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
-	viper.AutomaticEnv()
+	// viper.AutomaticEnv()
 	err = viper.ReadInConfig()
 	if err != nil {
 		return

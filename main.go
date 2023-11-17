@@ -3,10 +3,14 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
 	"github.com/slamchillz/xchange/api"
@@ -25,14 +29,32 @@ func main() {
 	if err != nil {
 		log.Fatal("cannot load config: ", err)
 	}
+	fmt.Printf("%+v\n", config)
 	conn, err := sql.Open(config.DBDriver, config.DBURL)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
+	}
+	err = runDatabaseMigration(config.MigrationURL, config.DBURL)
+	if err != nil {
+		log.Fatal("cannot run database migration: ", err)
 	}
 	store := db.NewStorage(conn)
 	go runGRPCServer(config, store)
 	runGatewayServer(config)
 	// runHTTPServer(config, store)
+}
+
+func runDatabaseMigration(migrationURL, databaseURL string) error {
+	m, err := migrate.New(migrationURL, databaseURL)
+	if err != nil {
+		return err
+	}
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+	log.Println("migration completed successfully")
+	return nil
 }
 
 func runGRPCServer(config utils.Config, store db.Store) {
