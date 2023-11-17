@@ -121,7 +121,7 @@ CREATE TABLE coinswap (
     transaction_status CHARACTER VARYING(100) NOT NULL,
     current_usdt_ngn_rate CHARACTER VARYING(100) NOT NULL,
     customer_id INT NOT NULL,
-    ngn_equivalent numeric(50,8) NOT NULL,
+    ngn_equivalent numeric(50,8),
     payout_status CHARACTER VARYING(100) DEFAULT 'PENDING' NOT NULL,
     bank_acc_name CHARACTER VARYING(200) NOT NULL,
     bank_acc_number CHARACTER VARYING(50) NOT NULL,
