@@ -21,6 +21,38 @@
     "application/json"
   ],
   "paths": {
+    "/v1/swap": {
+      "post": {
+        "operationId": "Xchange_CreateSwap",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbCoinSwapResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbCoinSwapRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Xchange"
+        ]
+      }
+    },
     "/v1/users/login": {
       "post": {
         "operationId": "Xchange_LoginCustomer",
@@ -87,6 +119,33 @@
     }
   },
   "definitions": {
+    "pbCoinSwapRequest": {
+      "type": "object",
+      "properties": {
+        "coinName": {
+          "type": "string"
+        },
+        "coinAmountToSwap": {
+          "type": "number",
+          "format": "float"
+        },
+        "network": {
+          "type": "string"
+        },
+        "phoneNumber": {
+          "type": "string"
+        },
+        "bankName": {
+          "type": "string"
+        },
+        "bankAccNumber": {
+          "type": "string"
+        },
+        "bankCode": {
+          "type": "string"
+        }
+      }
+    },
     "pbCoinSwapResponse": {
       "type": "object",
       "properties": {
@@ -98,7 +157,8 @@
           "type": "string"
         },
         "coinAmountToSwap": {
-          "type": "string"
+          "type": "number",
+          "format": "float"
         },
         "network": {
           "type": "string"
@@ -125,7 +185,7 @@
         "ngnEquivalent": {
           "type": "string"
         },
-        "bankAccName": {
+        "bankName": {
           "type": "string"
         },
         "bankAccNumber": {
