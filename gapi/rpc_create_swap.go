@@ -33,7 +33,7 @@ func (server *Server) CreateSwap(ctx context.Context, req *pb.CoinSwapRequest) (
 		return nil, status.Errorf(codes.Internal, "Internal server error")
 	}
 	if count > 0 {
-		return nil, status.Errorf(codes.Internal, fmt.Sprintf("You have a pending %s transaction on %s network", req.CoinName, req.Network))
+		return nil, status.Errorf(codes.FailedPrecondition, fmt.Sprintf("You have a pending %s transaction on %s network", req.CoinName, req.Network))
 	}
 	address, err := common.GetSwapAddress(server.config, server.storage, req.GetCoinName(), req.GetNetwork(), arg.CustomerID)
 	if err != nil {
