@@ -34,5 +34,10 @@ service Xchange {
       body: "*"
     };
   }
-  rpc CoinSwap(CoinSwapRequest) returns (CoinSwapResponse) {}
+  rpc CreateSwap(CoinSwapRequest) returns (CoinSwapResponse) {
+    option (google.api.http) = {
+      post: "/v1/swap"
+      body: "*"
+    };
+  }
 }
