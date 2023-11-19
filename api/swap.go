@@ -20,6 +20,7 @@ import (
 	db "github.com/slamchillz/xchange/db/sqlc"
 	"github.com/slamchillz/xchange/token"
 	"github.com/slamchillz/xchange/utils"
+	"github.com/slamchillz/xchange/common"
 )
 
 type CoinSwapRequest struct {
@@ -34,6 +35,24 @@ type CoinSwapRequest struct {
 	ServerErrored	   bool
 	WaitGroup		   *sync.WaitGroup
 	btcUsdRate		   float64
+}
+
+type CoinSwapResponse struct {
+	ID                 int32          `json:"id"`
+	CoinName           string         `json:"coin_name"`
+	CoinAmountToSwap   string         `json:"coin_amount_to_swap"`
+	Network            string         `json:"network"`
+	PhoneNumber        string         `json:"phone_number"`
+	CoinAddress        string         `json:"coin_address"`
+	TransactionRef     string         `json:"transaction_ref"`
+	TransactionStatus  string         `json:"transaction_status"`
+	CurrentUsdtNgnRate string         `json:"current_usdt_ngn_rate"`
+	CustomerID         int32          `json:"customer_id"`
+	NgnEquivalent      string         `json:"ngn_equivalent"`
+	BankAccName        string         `json:"bank_acc_name"`
+	BankAccNumber      string         `json:"bank_acc_number"`
+	BankCode           string         `json:"bank_code"`
+	CreatedAt		   time.Time      `json:"created_at"`
 }
 
 func (csr *CoinSwapRequest) validateCoinName()  {
@@ -141,7 +160,7 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": req.FieldErrors})
 		return
 	}
-	customerPayload := ctx.MustGet(AUTHENTICATIONCONTEXTKEY).(*token.Payload)
+	customerPayload := ctx.MustGet(AUTHENTICATIONCONTEXTKEY).(*token.Payload) // revise this later
 	arg := db.GetPendingNetworkTransactionParams{
 		CustomerID: customerPayload.CustomerID,
 		Network: req.Network,
@@ -161,7 +180,7 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 		return
 	}
 	getAddressStart := time.Now()
-	address, err := GetSwapAddress(server.config, server.storage, &req, arg.CustomerID)
+	address, err := common.GetSwapAddress(server.config, server.storage, req.CoinName, req.Network, arg.CustomerID)
 	getAddressEnd := time.Since(getAddressStart)
 	logger.Println("get address time: ", getAddressEnd)
 	if err != nil {
@@ -172,6 +191,10 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 		}
 	}
 	currentUsdtRate := utils.RandomCoinswapRate()
+	ngnEquivalent := req.CoinAmountToSwap * currentUsdtRate
+	if strings.ToUpper(req.CoinName) == "BTC" {
+		ngnEquivalent = ngnEquivalent * req.btcUsdRate
+	}
 	swapDetails, err := server.storage.CreateSwap(context.Background(), db.CreateSwapParams{
 		CoinName: req.CoinName,
 		CoinAmountToSwap: fmt.Sprintf("%f", req.CoinAmountToSwap),
@@ -182,6 +205,7 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 		TransactionStatus: "PENDING",
 		CurrentUsdtNgnRate: fmt.Sprintf("%f", currentUsdtRate),
 		CustomerID: arg.CustomerID,
+		NgnEquivalent: fmt.Sprintf("%f", ngnEquivalent),
 		BankAccName: req.BankAccName,
 		BankAccNumber: req.BankAccNumber,
 		BankCode: req.BankCode,
@@ -191,114 +215,22 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
-	ctx.JSON(http.StatusOK, &swapDetails)
-}
-
-func GenerateNewAddress(config utils.Config, customerId int32, label, asset, accountId string) (map[string]interface{}, error) {
-	postData := map[string]string {
-		"label": label,
-		"asset": asset,
-		"accountId": accountId,
+	coinSwapResponse := CoinSwapResponse{
+		ID: swapDetails.ID,
+		CoinName: swapDetails.CoinName,
+		CoinAmountToSwap: swapDetails.CoinAmountToSwap,
+		Network: swapDetails.Network,
+		PhoneNumber: swapDetails.PhoneNumber,
+		CoinAddress: swapDetails.CoinAddress,
+		TransactionRef: swapDetails.TransactionRef,
+		TransactionStatus: swapDetails.TransactionStatus,
+		CurrentUsdtNgnRate: swapDetails.CurrentUsdtNgnRate,
+		CustomerID: swapDetails.CustomerID,
+		NgnEquivalent: swapDetails.NgnEquivalent,
+		BankAccName: swapDetails.BankAccName,
+		BankAccNumber: swapDetails.BankAccNumber,
+		BankCode: swapDetails.BankCode,
+		CreatedAt: swapDetails.CreatedAt,
 	}
-	reqData := new(bytes.Buffer)
-	err := json.NewEncoder(reqData).Encode(postData)
-	if err != nil {
-		return nil, err
-	}
-	url, err := url.Parse("https://developers.bitpowr.com/api/v1/addresses")
-	if err != nil {
-		return nil, err
-	}
-	req := http.Request{
-		Method: http.MethodPost,
-		URL: url,
-		Header: map[string][]string {
-			"Content-Type": {"application/json"},
-			"Authorization": {fmt.Sprintf("Bearer %s", config.BITPOWR_API_KEY)},
-		},
-		Body: io.NopCloser(reqData),
-	}
-	response, err := http.DefaultClient.Do(&req)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unable to generate new %s address", asset)
-	}
-	var data map[string]interface{}
-	err = json.NewDecoder(response.Body).Decode(&data)
-	if err != nil {
-		return nil, err
-	}
-	data = data["data"].(map[string]interface{})
-	return data, nil
-}
-
-
-func GetSwapAddress(config utils.Config, storage db.Store, req *CoinSwapRequest, customerId int32) (address string, err error) {
-	var nullAddress sql.NullString
-	var newAaddressData map[string]interface{}
-	switch req.Network {
-	case "BTC":
-		nullAddress, err = storage.GetBtcAddress(context.Background(), customerId)
-	case "BSC":
-		nullAddress, err = storage.GetUsdtBscAddress(context.Background(), customerId)
-	case "TRON":
-		nullAddress, err = storage.GetUsdtTronAddress(context.Background(), customerId)
-	case "ETH":
-		nullAddress, err = storage.GetUsdtAddress(context.Background(), customerId)
-	}
-	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			return
-		}
-	}
-	address = nullAddress.String
-	if address == "" {
-		label := req.CoinName + "_" + req.Network
-		asset := req.CoinName
-		accountId := config.BITPOWR_ACCOUNT_ID
-		newAaddressData, err = GenerateNewAddress(config, customerId, label, asset, accountId)
-		if err != nil {
-			return
-		}
-	}
-	address = newAaddressData["address"].(string)
-	addressUid :=newAaddressData["uid"].(string)
-	network := newAaddressData["chain"].(string)
-	switch req.Network {
-	case "BTC":
-		_, err = storage.InsertNewBtcAddress(context.Background(), db.InsertNewBtcAddressParams{
-			BtcAddress: sql.NullString{String: address, Valid: true},
-			BtcAddressUid: sql.NullString{String: addressUid, Valid: true},
-			BtcNetwork: sql.NullString{String: network, Valid: true},
-			CustomerID: customerId,
-		})
-	case "BSC":
-		_, err = storage.InsertNewUsdtBscAddress(context.Background(), db.InsertNewUsdtBscAddressParams{
-			UsdtBscAddress: sql.NullString{String: address, Valid: true},
-			UsdtBscAddressUid: sql.NullString{String: addressUid, Valid: true},
-			UsdtBscNetwork: sql.NullString{String: network, Valid: true},
-			CustomerID: customerId,
-		})
-	case "TRON":
-		_, err = storage.InsertNewUsdtTronAddress(context.Background(), db.InsertNewUsdtTronAddressParams{
-			UsdtTronAddress: sql.NullString{String: address, Valid: true},
-			UsdtTronAddressUid: sql.NullString{String: addressUid, Valid: true},
-			UsdtTronNetwork: sql.NullString{String: network, Valid: true},
-			CustomerID: customerId,
-		})
-	case "ETH":
-		_, err = storage.InsertNewUsdtAddress(context.Background(), db.InsertNewUsdtAddressParams{
-			UsdtAddress: sql.NullString{String: address, Valid: true},
-			UsdtAddressUid: sql.NullString{String: addressUid, Valid: true},
-			UsdtNetwork: sql.NullString{String: network, Valid: true},
-			CustomerID: customerId,
-		})
-	}
-	if err != nil {
-		return
-	}
-	return address, nil
+	ctx.JSON(http.StatusOK, &coinSwapResponse)
 }
