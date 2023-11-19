@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -33,8 +32,9 @@ func main() {
 	}
 	if config.Env == "dev" {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+		log.Info().Msg("starting server in development mode")
+		log.Info().Msgf("config: %+v", config)
 	}
-	fmt.Printf("%+v\n", config)
 	conn, err := sql.Open(config.DBDriver, config.DBURL)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot connect to db")
@@ -75,7 +75,7 @@ func runGRPCServer(config utils.Config, store db.Store) {
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot create listener for GRPC server")
 	}
-	log.Printf("starting gRPC server at %s", config.GRPCServerAddress)
+	log.Info().Msgf("starting gRPC server at %s", config.GRPCServerAddress)
 	err = grpcServer.Serve(listener)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot start gRPC server")
@@ -122,7 +122,7 @@ func runGatewayServer(config utils.Config) {
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot create listener for gateway server")
 	}
-	log.Printf("starting gateway server at %s", config.HTTPServerAddress)
+	log.Info().Msgf("starting gateway server at %s", config.HTTPServerAddress)
 	muxLogWrapper := gapi.HttpLogger(mux)
 	err = http.Serve(listener, muxLogWrapper)
 	if err != nil {
