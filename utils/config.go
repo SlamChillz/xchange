@@ -8,6 +8,7 @@ import (
 
 // Configuration struct that holds the configuration for the software
 type Config struct {
+	Env string `mapstructure:"ENV"`
 	DBDriver string `mapstructure:"DBDRIVER"`
 	DBURL   string `mapstructure:"DBURL"`
 	DBName string `mapstructure:"DBNAME"`
