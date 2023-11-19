@@ -26,6 +26,7 @@ func createRandomCoinSwap(t *testing.T) Coinswap {
 		TransactionRef: utils.RandomString(15),
 		CurrentUsdtNgnRate: fmt.Sprintf("%v", coinswaprate),
 		CustomerID: customer.ID,
+		NgnEquivalent: fmt.Sprintf("%.8f", coinswapamount * coinswaprate),
 		// PayoutStatus: utils.RandomPayoutStatus(),
 		BankAccName: utils.RandomBankName(),
 		BankAccNumber: utils.RandomBankAccount(),

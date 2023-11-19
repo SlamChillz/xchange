@@ -14,10 +14,10 @@ const createSwap = `-- name: CreateSwap :one
 INSERT INTO coinswap (
     coin_name, coin_amount_to_swap, network, phone_number,
     coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate,
-    customer_id, bank_acc_name, bank_acc_number, bank_code
+    customer_id, ngn_equivalent, bank_acc_name, bank_acc_number, bank_code
 ) VALUES (
     $1, $2, $3, $4, $5, $6,
-    $7, $8, $9, $10, $11, $12
+    $7, $8, $9, $10, $11, $12, $13
 ) RETURNING id, coin_name, coin_amount_to_swap, network, phone_number, coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate, customer_id, ngn_equivalent, payout_status, bank_acc_name, bank_acc_number, bitpowr_ref, trans_address, trans_amount, trans_chain, trans_hash, bank_code, admin_trans_amount, admin_trans_fee, admin_trans_ref, admin_trans_uid, trans_amount_ngn, created_at, updated_at
 `
 
@@ -31,6 +31,7 @@ type CreateSwapParams struct {
 	TransactionStatus  string `json:"transaction_status"`
 	CurrentUsdtNgnRate string `json:"current_usdt_ngn_rate"`
 	CustomerID         int32  `json:"customer_id"`
+	NgnEquivalent      string `json:"ngn_equivalent"`
 	BankAccName        string `json:"bank_acc_name"`
 	BankAccNumber      string `json:"bank_acc_number"`
 	BankCode           string `json:"bank_code"`
@@ -47,6 +48,7 @@ func (q *Queries) CreateSwap(ctx context.Context, arg CreateSwapParams) (Coinswa
 		arg.TransactionStatus,
 		arg.CurrentUsdtNgnRate,
 		arg.CustomerID,
+		arg.NgnEquivalent,
 		arg.BankAccName,
 		arg.BankAccNumber,
 		arg.BankCode,
