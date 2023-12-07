@@ -44,9 +44,9 @@ func main() {
 		log.Fatal().Err(err).Msg("cannot run database migration")
 	}
 	store := db.NewStorage(conn)
-	go runGRPCServer(config, store)
-	runGatewayServer(config)
-	// runHTTPServer(config, store)
+	// go runGRPCServer(config, store)
+	// runGatewayServer(config)
+	runHTTPServer(config, store)
 }
 
 func runDatabaseMigration(migrationURL, databaseURL string) error {
