@@ -32,7 +32,7 @@ func (server *Server) CreateCustomer(ctx context.Context, req *pb.CreateCustomer
 	})
 	if err != nil {
 		if pgErr, ok := err.(*pq.Error); ok && pgErr.Code == "23505"{
-			return nil, status.Errorf(codes.FailedPrecondition, "user with the email or phone number already exists")
+			return nil, status.Errorf(codes.AlreadyExists, "user with the email or phone number already exists")
 		}
 		// log the error
 		return nil, status.Errorf(codes.Internal, fmt.Sprintf("Internal server error: %v", err.Error()))
