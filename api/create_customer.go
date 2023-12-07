@@ -11,8 +11,8 @@ import (
 )
 
 type CreateCustomerRequest struct {
-	FirstName string `json:"first_name" binding:"required,min=3,max=50"`
-	LastName string `json:"last_name" binding:"required,min=3,max=50"`
+	FirstName string `json:"first_name" binding:"required,min=3,max=50,alpha"`
+	LastName string `json:"last_name" binding:"required,min=3,max=50,alpha"`
 	Email string `json:"email" binding:"required,email"`
 	PhoneNumber string `json:"phone_number" binding:"required,phonenumber"`
 	Password string `json:"password" binding:"required,gte=8"`

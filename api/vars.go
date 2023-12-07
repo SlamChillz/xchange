@@ -1,8 +1,15 @@
 package api
 
 import (
+	"errors"
 	"log"
 	"os"
+)
+
+const BTCUSDT = 34403.000000
+
+var (
+	ErrInvalidBankAccount = errors.New("unable to verify account number")
 )
 
 var BTCDATA = []map[string]string{
@@ -23,6 +30,13 @@ var CHAINS = map[string]string {
 	"USDT_TRON": "TRON",
 	"USDT_BSC": "BSC",
 	"USDT": "ETH",
+}
+
+var NETWORKS = map[string]string {
+	"BTC": "BTC",
+	"TRON": "USDT_TRON",
+	"BSC": "USDT_BSC",
+	"ETH": "USDT",
 }
 
 var logger = log.New(os.Stdout, "api: ", log.Llongfile)

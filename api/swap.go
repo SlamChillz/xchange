@@ -1,40 +1,32 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
-	"net/url"
 	"time"
 
 	// "strconv"
 	"strings"
-	"sync"
 
 	"github.com/gin-gonic/gin"
 	db "github.com/slamchillz/xchange/db/sqlc"
 	"github.com/slamchillz/xchange/token"
 	"github.com/slamchillz/xchange/utils"
 	"github.com/slamchillz/xchange/common"
+	"github.com/go-playground/validator/v10"
 )
 
 type CoinSwapRequest struct {
-	CoinName           string `json:"coin_name" binding:"required"`
+	CoinName           string `json:"coin_name" binding:"required,coinname"`
 	CoinAmountToSwap   float64 `json:"coin_amount_to_swap" binding:"required,numeric,gt=0"`
-	Network            string `json:"network" binding:"required,oneof=BTC BSC TRON ETH"`
+	Network            string `json:"network" binding:"required,oneof=BTC BSC TRON ETH,network"`
 	PhoneNumber        string `json:"phone_number" binding:"required,phonenumber"`
 	BankAccName        string `json:"bank_acc_name" binding:"required"`
 	BankAccNumber      string `json:"bank_acc_number" binding:"required"`
 	BankCode           string `json:"bank_code" binding:"required"`
-	FieldErrors		   map[string]string
-	ServerErrored	   bool
-	WaitGroup		   *sync.WaitGroup
-	btcUsdRate		   float64
 }
 
 type CoinSwapResponse struct {
@@ -55,109 +47,36 @@ type CoinSwapResponse struct {
 	CreatedAt		   time.Time      `json:"created_at"`
 }
 
-func (csr *CoinSwapRequest) validateCoinName()  {
-	csr.CoinName = strings.ToUpper(csr.CoinName)
-	if _, ok := BITPOWRCOINTICKER[csr.CoinName]; !ok {
-		csr.FieldErrors["coin_name"] = "Invalid coin name"
-	}
-	csr.WaitGroup.Done()
-}
-
-func (csr *CoinSwapRequest) validateCoinAmountToSwap() {
-	amount := csr.CoinAmountToSwap
-	if csr.CoinName == "BTC" {
-		amount = amount * csr.btcUsdRate
-	}
-	if amount < 20.00 {
-		csr.FieldErrors["coin_amount_to_swap"] = "Coin amount to swap must be $20 or greater"
-	}
-	csr.WaitGroup.Done()
-}
-
-func (csr *CoinSwapRequest) validateNetwork() {
-	csr.Network = strings.ToUpper(csr.Network)
-	if network, ok := CHAINS[csr.CoinName]; !ok || network != csr.Network {
-		csr.FieldErrors["network"] = "Invalid network selected or network not supported"
-	}
-	csr.WaitGroup.Done()
-}
-
-// func (csr *CoinSwapRequest) validatePhoneNumber() {
-// 	phoneNumberLength := len(csr.PhoneNumber)
-// 	if (strings.HasPrefix(csr.PhoneNumber, "+")  && phoneNumberLength != 14) || (strings.HasPrefix(csr.PhoneNumber, "0") && phoneNumberLength != 11)  {
-// 		csr.FieldErrors["phone_number"] = "invalid phone number"
-// 	}
-// 	csr.WaitGroup.Done()
-// }
-
-func (csr *CoinSwapRequest) validateBankDetails() {
-	config, err := utils.LoadConfig("../")
-	if err != nil {
-		csr.ServerErrored = true
-	} else {
-		rawData := map[string]string {
-			"bank": csr.BankCode,
-			"account": csr.BankAccNumber,
-		}
-		reqData := new(bytes.Buffer)
-		err = json.NewEncoder(reqData).Encode(rawData)
-		if err != nil {
-			csr.ServerErrored = true
-		} else {
-			url, err := url.Parse(config.VALIDATE_BANK_URL)
-			if err != nil {
-				csr.ServerErrored = true
-			} else {
-				req := &http.Request{
-					Method: http.MethodPost,
-					URL: url,
-					Header: map[string][]string {
-						"Content-Type": {"application/json"},
-						"X-API-KEY": {config.SHUTTER_PUBLIC_KEY},
-					},
-					Body: io.NopCloser(reqData),
-				}
-				response, err := http.DefaultClient.Do(req)
-				if err != nil {
-					csr.ServerErrored = true
-				} else {
-					defer response.Body.Close()
-					if response.StatusCode != http.StatusOK {
-						csr.FieldErrors["bank_acc_number"] = "Unable to verify account details"
-					}
-				}
-			}
-		}
-	}
-	csr.WaitGroup.Done()
-}
-
-func (csr *CoinSwapRequest) validate() {
-	csr.WaitGroup = new(sync.WaitGroup)
-	csr.WaitGroup.Add(4)
-	go csr.validateBankDetails()
-	go csr.validateCoinAmountToSwap()
-	go csr.validateCoinName()
-	go csr.validateNetwork()
-	// go csr.validatePhoneNumber()
-	csr.WaitGroup.Wait()
-}
-
 func (server *Server) CoinSwap(ctx *gin.Context) {
 	var req CoinSwapRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(400, gin.H{"error": err.Error()})
-		return
+	err := ctx.ShouldBindJSON(&req);
+	// var bankErrChannel = make(chan error)
+	var amountErrChannel = make(chan error)
+	// go validateBankDetails(server.config, req.BankCode, req.BankAccNumber, bankErrChannel)
+	go validateCoinAmountToSwap(req.CoinName, req.CoinAmountToSwap, amountErrChannel)
+	reqErr := CreateSwapError{}
+	var ve validator.ValidationErrors
+	if err != nil {
+		if errors.As(err, &ve) {
+			for _, e := range ve {
+				field := e.Field()
+				key, value := genrateFieldErrorMessage(field)
+				if key != "" {
+					reqErr[key] = value
+				}
+			}
+		} else {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid json request body"})
+			return
+		}
 	}
-	req.btcUsdRate = 34403.000000
-	req.FieldErrors = make(map[string]string)
-	req.WaitGroup = new(sync.WaitGroup)
-	validationStart := time.Now()
-	req.validate()
-	validationEnd := time.Since(validationStart)
-	logger.Println("validation time: ", validationEnd)
-	if len(req.FieldErrors) > 0 {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": req.FieldErrors})
+	err = <-amountErrChannel
+	if err != nil {
+		reqErr["coin_amount_to_swap"] = err.Error()
+		// close(amountErrChannel)
+	}
+	if len(reqErr) > 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": reqErr})
 		return
 	}
 	customerPayload := ctx.MustGet(AUTHENTICATIONCONTEXTKEY).(*token.Payload) // revise this later
@@ -193,7 +112,7 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 	currentUsdtRate := utils.RandomCoinswapRate()
 	ngnEquivalent := req.CoinAmountToSwap * currentUsdtRate
 	if strings.ToUpper(req.CoinName) == "BTC" {
-		ngnEquivalent = ngnEquivalent * req.btcUsdRate
+		ngnEquivalent = ngnEquivalent * BTCUSDT
 	}
 	swapDetails, err := server.storage.CreateSwap(context.Background(), db.CreateSwapParams{
 		CoinName: req.CoinName,
