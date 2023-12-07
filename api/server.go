@@ -28,6 +28,8 @@ func NewServer(config utils.Config, storage db.Store) (*Server, error) {
 	}
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("phonenumber", validatePhoneNumber)
+		v.RegisterValidation("coinname", validateCoinName)
+		v.RegisterValidation("network", validateNetwork)
 	}
 	server.ConfigRouter()
 	return server, nil
