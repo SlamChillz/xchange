@@ -100,6 +100,21 @@ func (mr *MockStoreMockRecorder) GetBtcAddress(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBtcAddress", reflect.TypeOf((*MockStore)(nil).GetBtcAddress), arg0, arg1)
 }
 
+// GetCustomerBankDetails mocks base method.
+func (m *MockStore) GetCustomerBankDetails(arg0 context.Context, arg1 int32) (db.Bankdetail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCustomerBankDetails", arg0, arg1)
+	ret0, _ := ret[0].(db.Bankdetail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCustomerBankDetails indicates an expected call of GetCustomerBankDetails.
+func (mr *MockStoreMockRecorder) GetCustomerBankDetails(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerBankDetails", reflect.TypeOf((*MockStore)(nil).GetCustomerBankDetails), arg0, arg1)
+}
+
 // GetCustomerByEmail mocks base method.
 func (m *MockStore) GetCustomerByEmail(arg0 context.Context, arg1 string) (db.Customer, error) {
 	m.ctrl.T.Helper()
@@ -113,6 +128,21 @@ func (m *MockStore) GetCustomerByEmail(arg0 context.Context, arg1 string) (db.Cu
 func (mr *MockStoreMockRecorder) GetCustomerByEmail(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerByEmail", reflect.TypeOf((*MockStore)(nil).GetCustomerByEmail), arg0, arg1)
+}
+
+// GetCustomerByPhoneNumber mocks base method.
+func (m *MockStore) GetCustomerByPhoneNumber(arg0 context.Context, arg1 string) (db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCustomerByPhoneNumber", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCustomerByPhoneNumber indicates an expected call of GetCustomerByPhoneNumber.
+func (mr *MockStoreMockRecorder) GetCustomerByPhoneNumber(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerByPhoneNumber", reflect.TypeOf((*MockStore)(nil).GetCustomerByPhoneNumber), arg0, arg1)
 }
 
 // GetPendingNetworkTransaction mocks base method.
@@ -173,6 +203,21 @@ func (m *MockStore) GetUsdtTronAddress(arg0 context.Context, arg1 int32) (sql.Nu
 func (mr *MockStoreMockRecorder) GetUsdtTronAddress(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsdtTronAddress", reflect.TypeOf((*MockStore)(nil).GetUsdtTronAddress), arg0, arg1)
+}
+
+// InsertCustomerBankDetails mocks base method.
+func (m *MockStore) InsertCustomerBankDetails(arg0 context.Context, arg1 db.InsertCustomerBankDetailsParams) ([]db.Bankdetail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertCustomerBankDetails", arg0, arg1)
+	ret0, _ := ret[0].([]db.Bankdetail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InsertCustomerBankDetails indicates an expected call of InsertCustomerBankDetails.
+func (mr *MockStoreMockRecorder) InsertCustomerBankDetails(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertCustomerBankDetails", reflect.TypeOf((*MockStore)(nil).InsertCustomerBankDetails), arg0, arg1)
 }
 
 // InsertNewBtcAddress mocks base method.

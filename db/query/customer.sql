@@ -11,3 +11,6 @@ INSERT INTO customer (
 
 -- name: GetCustomerByEmail :one
 SELECT * FROM customer WHERE email = $1;
+
+-- name: GetCustomerByPhoneNumber :one
+SELECT * FROM customer WHERE phone = $1;
