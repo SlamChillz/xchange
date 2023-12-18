@@ -5,48 +5,59 @@ import (
 	"database/sql"
 	"net"
 	"net/http"
-	"os"
+	// "os"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 	"github.com/slamchillz/xchange/api"
 	db "github.com/slamchillz/xchange/db/sqlc"
 	"github.com/slamchillz/xchange/gapi"
 	"github.com/slamchillz/xchange/pb"
 	"github.com/slamchillz/xchange/utils"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"github.com/slamchillz/xchange/redisdb"
+	// "github.com/rs/zerolog"
+	// "github.com/rs/zerolog/logger"
+	log "github.com/slamchillz/xchange/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+var logger = log.GetLogger()
+
 func main() {
-	config, err := utils.LoadConfig("./")
+	config, err := utils.LoadConfig("/home/ubuntu/xchange")
 	if err != nil {
-		log.Fatal().Err(err).Msg("cannot load config")
+		logger.Fatal().Err(err).Stack().Msg("cannot load config")
 	}
 	if config.Env == "dev" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-		log.Info().Msg("starting server in development mode")
-		log.Info().Msgf("config: %+v", config)
+		// logger.Logger = logger.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+		logger.Info().Msg("starting server in development mode")
+		// logger.Info().Msgf("config: %+v", config)
 	}
 	conn, err := sql.Open(config.DBDriver, config.DBURL)
 	if err != nil {
-		log.Fatal().Err(err).Msg("cannot connect to db")
+		logger.Fatal().Err(err).Msg("cannot connect to db")
 	}
 	err = runDatabaseMigration(config.MigrationURL, config.DBURL)
 	if err != nil {
-		log.Fatal().Err(err).Msg("cannot run database migration")
+		logger.Fatal().Err(err).Msg("cannot run database migration")
 	}
 	store := db.NewStorage(conn)
+	rdConn := redis.NewClient(&redis.Options{
+		Addr:	  config.RedisAddress,
+		Password: config.RedisPassword, // no password set
+		DB:		  config.RedisDB,  // use default DB
+	})
+	redisClient := redisdb.NewRedisClient(rdConn)
 	// go runGRPCServer(config, store)
 	// runGatewayServer(config)
-	runHTTPServer(config, store)
+	runHTTPServer(config, store, redisClient)
 }
 
 func runDatabaseMigration(migrationURL, databaseURL string) error {
@@ -58,14 +69,14 @@ func runDatabaseMigration(migrationURL, databaseURL string) error {
 	if err != nil && err != migrate.ErrNoChange {
 		return err
 	}
-	log.Info().Msg("database migration successful")
+	logger.Info().Msg("database migration successful")
 	return nil
 }
 
 func runGRPCServer(config utils.Config, store db.Store) {
 	server, err := gapi.NewServer(config, store)
 	if err != nil {
-		log.Fatal().Err(err).Msg("cannot create gapi server")
+		logger.Fatal().Err(err).Msg("cannot create gapi server")
 	}
 	grpcLogger := grpc.UnaryInterceptor(gapi.GrpcLogger)
 	grpcServer := grpc.NewServer(grpcLogger)
@@ -73,23 +84,23 @@ func runGRPCServer(config utils.Config, store db.Store) {
 	reflection.Register(grpcServer)
 	listener, err := net.Listen("tcp", config.GRPCServerAddress)
 	if err != nil {
-		log.Fatal().Err(err).Msg("cannot create listener for GRPC server")
+		logger.Fatal().Err(err).Msg("cannot create listener for GRPC server")
 	}
-	log.Info().Msgf("starting gRPC server at %s", config.GRPCServerAddress)
+	logger.Info().Msgf("starting gRPC server at %s", config.GRPCServerAddress)
 	err = grpcServer.Serve(listener)
 	if err != nil {
-		log.Fatal().Err(err).Msg("cannot start gRPC server")
+		logger.Fatal().Err(err).Msg("cannot start gRPC server")
 	}
 }
 
-func runHTTPServer(config utils.Config, store db.Store) {
-	server, err := api.NewServer(config, store)
+func runHTTPServer(config utils.Config, store db.Store, redisClient redisdb.RedisClient) {
+	server, err := api.NewServer(config, store, redisClient)
 	if err != nil {
-		log.Fatal().Err(err).Msg("cannot create HTTP server")
+		logger.Fatal().Err(err).Msg("cannot create HTTP server")
 	}
 	err = server.Start(config.HTTPServerAddress)
 	if err != nil {
-		log.Fatal().Err(err).Msg("cannot start HTTP server")
+		logger.Fatal().Err(err).Msg("cannot start HTTP server")
 	}
 }
 
@@ -109,7 +120,7 @@ func runGatewayServer(config utils.Config) {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	})
 	if err != nil {
-		log.Fatal().Err(err).Msg("cannot register gateway server")
+		logger.Fatal().Err(err).Msg("cannot register gateway server")
 	}
 
 	mux := http.NewServeMux()
@@ -120,12 +131,12 @@ func runGatewayServer(config utils.Config) {
 
 	listener, err := net.Listen("tcp", config.HTTPServerAddress)
 	if err != nil {
-		log.Fatal().Err(err).Msg("cannot create listener for gateway server")
+		logger.Fatal().Err(err).Msg("cannot create listener for gateway server")
 	}
-	log.Info().Msgf("starting gateway server at %s", config.HTTPServerAddress)
+	logger.Info().Msgf("starting gateway server at %s", config.HTTPServerAddress)
 	muxLogWrapper := gapi.HttpLogger(mux)
 	err = http.Serve(listener, muxLogWrapper)
 	if err != nil {
-		log.Fatal().Err(err).Msg("cannot start gateway server")
+		logger.Fatal().Err(err).Msg("cannot start gateway server")
 	}
 }
