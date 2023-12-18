@@ -1,18 +1,13 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
-	"net/url"
 	"regexp"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/slamchillz/xchange/utils"
+	// "github.com/slamchillz/xchange/utils"
 )
 
 type CreateSwapError map[string]string
@@ -72,41 +67,21 @@ func validateCoinAmountToSwap(coinName string, amountToSwap float64, amountErrCh
 	}
 	if amount < 20.00 {
 		amountErrChannel <- errors.New("coin amount to swap must be $20 or greater")
+	} else {
+		amountErrChannel <- nil
 	}
-	amountErrChannel <- nil
 	close(amountErrChannel)
 }
 
-func validateBankDetails(config utils.Config, bankCode string, bankAccNumber string, bankErrChannel chan<- error) {
-	rawData := map[string]string {
-		"bank": bankCode,
-		"account": bankAccNumber,
-	}
-	reqData := new(bytes.Buffer)
-	err := json.NewEncoder(reqData).Encode(rawData)
-	if err != nil {
-		bankErrChannel <- err
-	}
-	url, err := url.Parse(config.VALIDATE_BANK_URL)
-	if err != nil {
-		bankErrChannel <- err
-	}
-	req := &http.Request{
-		Method: http.MethodPost,
-		URL: url,
-		Header: map[string][]string {
-			"Content-Type": {"application/json"},
-			"X-API-KEY": {config.SHUTTER_PUBLIC_KEY},
-		},
-		Body: io.NopCloser(reqData),
-	}
-	response, err := http.DefaultClient.Do(req)
-	if err != nil {
-		bankErrChannel <- err
-	}
-	defer response.Body.Close()
-	if response.StatusCode == http.StatusBadRequest {
-		bankErrChannel <- errors.New("unable to verify account number")
-	}
-	bankErrChannel <- nil
-}
+// func validateBankDetails(config utils.Config, bankCode string, bankAccNumber string, bankErrChannel chan<- error) {
+// 	bankDetails := BankDetailsRequest{
+// 		BankCode: bankCode,
+// 		BankAccNumber: bankAccNumber,
+// 	}
+// 	_, err := ValidateBankDetailsFromShutterScore(bankDetails)
+// 	if err != nil {
+// 		logger.Error().Err(err).Msg("error validating bank details")
+// 		bankErrChannel <- err
+// 	}
+// 	bankErrChannel <- nil
+// }
