@@ -53,6 +53,8 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 	// var bankErrChannel = make(chan error)
 	var amountErrChannel = make(chan error)
 	// go validateBankDetails(server.config, req.BankCode, req.BankAccNumber, bankErrChannel)
+	// What if there is an error in the request fields coinname and coinamounttoswap
+	// calling this function before validating the request fields could cause problems
 	go validateCoinAmountToSwap(req.CoinName, req.CoinAmountToSwap, amountErrChannel)
 	reqErr := CreateSwapError{}
 	var ve validator.ValidationErrors
@@ -88,9 +90,9 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 	checkPendingStart := time.Now()
 	count, err := server.storage.GetPendingNetworkTransaction(context.Background(), arg)
 	checkPendingEnd := time.Since(checkPendingStart)
-	logger.Println("check pending time: ", checkPendingEnd)
+	logger.Info().Msgf("check pending time: %v", checkPendingEnd)
 	if err != nil {
-		logger.Println(err)
+		logger.Error().Err(err).Msg("error checking pending transaction")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
@@ -101,10 +103,10 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 	getAddressStart := time.Now()
 	address, err := common.GetSwapAddress(server.config, server.storage, req.CoinName, req.Network, arg.CustomerID)
 	getAddressEnd := time.Since(getAddressStart)
-	logger.Println("get address time: ", getAddressEnd)
+	logger.Info().Msgf("get address time: %v", getAddressEnd)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			logger.Println(err)
+			logger.Error().Err(err).Msg("error getting address")
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
@@ -130,7 +132,7 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 		BankCode: req.BankCode,
 	})
 	if err != nil {
-		logger.Println(err)
+		logger.Error().Err(err).Msg("error creating swap")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
