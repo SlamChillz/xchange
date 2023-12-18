@@ -16,9 +16,13 @@ type Config struct {
 	DBPassword string `mapstructure:"DBPASSWORD"`
 	DBHost string `mapstructure:"DBHOST"`
 	DBPort string `mapstructure:"DBPORT"`
+	RedisAddress string `mapstructure:"REDIS_ADDRESS"`
+	RedisPassword string `mapstructure:"REDIS_PASSWORD"`
+	RedisDB int `mapstructure:"REDIS_DB"`
 	MigrationURL string `mapstructure:"MIGRATION_URL"`
 	HTTPServerAddress string `mapstructure:"HTTP_SERVER_ADDRESS"`
 	GRPCServerAddress string `mapstructure:"GRPC_SERVER_ADDRESS"`
+	LOG_LEVEL string `mapstructure:"LOG_LEVEL"`
 	JWT_SECRET string `mapstructure:"JWT_SECRET"`
 	JWT_ACCESS_TOKEN_DURATION time.Duration `mapstructure:"JWT_ACCESS_TOKEN_DURATION"`
 	SHUTTER_PUBLIC_KEY string `mapstructure:"SHUTTER_PUBLIC_KEY"`
