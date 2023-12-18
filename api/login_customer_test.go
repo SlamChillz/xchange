@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	mockdb "github.com/slamchillz/xchange/db/mock"
 	db "github.com/slamchillz/xchange/db/sqlc"
+	mockredisdb "github.com/slamchillz/xchange/redisdb/mock"
 	"github.com/slamchillz/xchange/utils"
 	"github.com/stretchr/testify/require"
 	gomock "go.uber.org/mock/gomock"
@@ -55,15 +56,16 @@ func TestLoginCustomerRequest(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			redisClient := mockredisdb.NewMockRedisClient(ctrl)
 			tc.stubs(store)
 
-			server := newTestServer(t, store)
+			server := newTestServer(t, store, redisClient)
 			recorder := httptest.NewRecorder()
 
 			reqBody, err := json.Marshal(tc.body)
 			require.NoError(t, err)
 
-			url := "/api/v1/users/login"
+			url := "/api/v1/user/login"
 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(reqBody))
 			require.NoError(t, err)
 

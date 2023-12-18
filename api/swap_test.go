@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/slamchillz/xchange/token"
 	mockdb "github.com/slamchillz/xchange/db/mock"
+	mockredisdb "github.com/slamchillz/xchange/redisdb/mock"
 	db "github.com/slamchillz/xchange/db/sqlc"
 	"github.com/slamchillz/xchange/utils"
 	"github.com/stretchr/testify/require"
@@ -85,15 +86,16 @@ func TestCoinSwapRequest(t *testing.T) {
 			defer ctrl.Finish()
 
 			store := mockdb.NewMockStore(ctrl)
+			redisClient := mockredisdb.NewMockRedisClient(ctrl)
 			tc.stubs(store)
 
-			server := newTestServer(t, store)
+			server := newTestServer(t, store, redisClient)
 			recorder := httptest.NewRecorder()
 
 			reqBody, err := json.Marshal(tc.body)
 			require.NoError(t, err)
 
-			url := "/api/v1/swap"
+			url := "/api/v1/token/swap"
 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(reqBody))
 			require.NoError(t, err)
 
