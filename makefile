@@ -22,6 +22,8 @@ migratedown:
 mock:
 	@echo "Generating mock..."
 	@mockgen -package mockdb -destination db/mock/storage.go github.com/slamchillz/xchange/db/sqlc Store
+	@mockgen -package mockredisdb -destination redisdb/mock/client.go github.com/slamchillz/xchange/redisdb RedisClient
+	@mockgen -package mockotp -destination utils/mock/otp/token.go github.com/slamchillz/xchange/utils OTPGeneratorInterface
 	@echo "Mock generated."
 
 sqlcinstall:
