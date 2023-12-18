@@ -1,6 +1,8 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
@@ -33,6 +35,7 @@ type CustomerResponse struct {
 }
 
 func (server *Server) CreateCustomer(ctx *gin.Context) {
+	var err error
 	var req CreateCustomerRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -41,13 +44,39 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 	if req.PhoneNumber[0] == '0' {
 		req.PhoneNumber = "+234" + req.PhoneNumber[1:]
 	}
-	// TODO: Validate phone number and email to avoid pk increment on db error
+	// This is an expensive operation, should be done in a goroutine/queue
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
-	customer, err := server.storage.CreateCustomer(ctx, db.CreateCustomerParams{
+	// TODO: Validate phone number and email to avoid pk increment on db error
+	customer, err := server.storage.GetCustomerByEmail(ctx, req.Email)
+	if err != nil {
+		// log the error
+		if !errors.Is(err, sql.ErrNoRows) {
+			logger.Error().Err(err).Msg("error getting customer by email")
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+		customer, err = server.storage.GetCustomerByPhoneNumber(ctx, req.PhoneNumber)
+		if err != nil {
+			if !errors.Is(err, sql.ErrNoRows) {
+				logger.Error().Err(err).Msg("error getting customer by phone number")
+				ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+				return
+			}
+		} else if customer != (db.Customer{}) {
+			ctx.JSON(http.StatusConflict, gin.H{"error": "phone number has been taken"})
+			return
+		}
+	} else if customer != (db.Customer{}) {
+		ctx.JSON(http.StatusConflict, gin.H{"error": "email has been taken"})
+		return
+	}
+	// Create the customer
+	// Save to redis and send it to a queue
+	customer, _ = server.storage.CreateCustomer(ctx, db.CreateCustomerParams{
 		FirstName: req.FirstName,
 		LastName: req.LastName,
 		Email: req.Email,
@@ -59,8 +88,15 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "email or phone number already exists"})
 		} else {
 			// log the error
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			logger.Error().Err(err).Msg("error creating customer")
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		}
+		return
+	}
+	otp := utils.OTP.GenerateOTP()
+	_, err = server.redisClient.Set(ctx, otp, customer.Email, 5 * time.Minute)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 	resp := CreateCustomerResponse(customer)
