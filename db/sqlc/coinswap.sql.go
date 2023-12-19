@@ -8,6 +8,8 @@ package db
 import (
 	"context"
 	"database/sql"
+	"strings"
+	"time"
 )
 
 const createSwap = `-- name: CreateSwap :one
@@ -101,6 +103,111 @@ func (q *Queries) GetPendingNetworkTransaction(ctx context.Context, arg GetPendi
 	var count int64
 	err := row.Scan(&count)
 	return count, err
+}
+
+const listAllCoinSwapTransactions = `-- name: ListAllCoinSwapTransactions :many
+SELECT id, coin_name, coin_amount_to_swap, network, phone_number, coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate, customer_id, ngn_equivalent, payout_status, bank_acc_name, bank_acc_number, bitpowr_ref, trans_address, trans_amount, trans_chain, trans_hash, bank_code, admin_trans_amount, admin_trans_fee, admin_trans_ref, admin_trans_uid, trans_amount_ngn, created_at, updated_at FROM coinswap
+WHERE customer_id = $1
+AND coin_name IN ($2)
+AND transaction_status IN ($3)
+AND network IN ($4)
+AND created_at BETWEEN $5 AND $6
+ORDER BY created_at DESC
+OFFSET COALESCE($7, 0)
+LIMIT COALESCE($8, 20)
+`
+
+type ListAllCoinSwapTransactionsParams struct {
+	CustomerID        int32       `json:"customer_id"`
+	CoinName          []string    `json:"coin_name"`
+	TransactionStatus []string    `json:"transaction_status"`
+	Network           []string    `json:"network"`
+	StartDate         time.Time   `json:"start_date"`
+	EndDate           time.Time   `json:"end_date"`
+	Offset            interface{} `json:"offset"`
+	Limit             interface{} `json:"limit"`
+}
+
+func (q *Queries) ListAllCoinSwapTransactions(ctx context.Context, arg ListAllCoinSwapTransactionsParams) ([]Coinswap, error) {
+	query := listAllCoinSwapTransactions
+	var queryParams []interface{}
+	queryParams = append(queryParams, arg.CustomerID)
+	if len(arg.CoinName) > 0 {
+		for _, v := range arg.CoinName {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:coin_name*/?", strings.Repeat(",?", len(arg.CoinName))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:coin_name*/?", "NULL", 1)
+	}
+	if len(arg.TransactionStatus) > 0 {
+		for _, v := range arg.TransactionStatus {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:transaction_status*/?", strings.Repeat(",?", len(arg.TransactionStatus))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:transaction_status*/?", "NULL", 1)
+	}
+	if len(arg.Network) > 0 {
+		for _, v := range arg.Network {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:network*/?", strings.Repeat(",?", len(arg.Network))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:network*/?", "NULL", 1)
+	}
+	queryParams = append(queryParams, arg.StartDate)
+	queryParams = append(queryParams, arg.EndDate)
+	queryParams = append(queryParams, arg.Offset)
+	queryParams = append(queryParams, arg.Limit)
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Coinswap{}
+	for rows.Next() {
+		var i Coinswap
+		if err := rows.Scan(
+			&i.ID,
+			&i.CoinName,
+			&i.CoinAmountToSwap,
+			&i.Network,
+			&i.PhoneNumber,
+			&i.CoinAddress,
+			&i.TransactionRef,
+			&i.TransactionStatus,
+			&i.CurrentUsdtNgnRate,
+			&i.CustomerID,
+			&i.NgnEquivalent,
+			&i.PayoutStatus,
+			&i.BankAccName,
+			&i.BankAccNumber,
+			&i.BitpowrRef,
+			&i.TransAddress,
+			&i.TransAmount,
+			&i.TransChain,
+			&i.TransHash,
+			&i.BankCode,
+			&i.AdminTransAmount,
+			&i.AdminTransFee,
+			&i.AdminTransRef,
+			&i.AdminTransUid,
+			&i.TransAmountNgn,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateSwapWithBitpowrInfo = `-- name: UpdateSwapWithBitpowrInfo :one

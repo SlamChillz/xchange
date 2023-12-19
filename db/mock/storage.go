@@ -280,6 +280,21 @@ func (mr *MockStoreMockRecorder) InsertNewUsdtTronAddress(arg0, arg1 any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertNewUsdtTronAddress", reflect.TypeOf((*MockStore)(nil).InsertNewUsdtTronAddress), arg0, arg1)
 }
 
+// ListAllCoinSwapTransactions mocks base method.
+func (m *MockStore) ListAllCoinSwapTransactions(arg0 context.Context, arg1 db.ListAllCoinSwapTransactionsParams) ([]db.Coinswap, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAllCoinSwapTransactions", arg0, arg1)
+	ret0, _ := ret[0].([]db.Coinswap)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAllCoinSwapTransactions indicates an expected call of ListAllCoinSwapTransactions.
+func (mr *MockStoreMockRecorder) ListAllCoinSwapTransactions(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllCoinSwapTransactions", reflect.TypeOf((*MockStore)(nil).ListAllCoinSwapTransactions), arg0, arg1)
+}
+
 // RecentUsdtNgnRate mocks base method.
 func (m *MockStore) RecentUsdtNgnRate(arg0 context.Context, arg1 string) (db.Usdtngnrate, error) {
 	m.ctrl.T.Helper()
