@@ -42,5 +42,5 @@ AND transaction_status IN (sqlc.slice('transaction_status'))
 AND network IN (sqlc.slice('network'))
 AND created_at BETWEEN sqlc.arg('start_date') AND sqlc.arg('end_date')
 ORDER BY created_at DESC
-OFFSET COALESCE(sqlc.narg('offset'), 0)
-LIMIT COALESCE(sqlc.narg('limit'), 20);
+LIMIT COALESCE(sqlc.narg('limit'), 20)
+OFFSET COALESCE(sqlc.narg('offset'), 0);

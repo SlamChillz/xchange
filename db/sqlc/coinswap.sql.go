@@ -113,8 +113,8 @@ AND transaction_status IN ($3)
 AND network IN ($4)
 AND created_at BETWEEN $5 AND $6
 ORDER BY created_at DESC
-OFFSET COALESCE($7, 0)
 LIMIT COALESCE($8, 20)
+OFFSET COALESCE($7, 0)
 `
 
 type ListAllCoinSwapTransactionsParams struct {
