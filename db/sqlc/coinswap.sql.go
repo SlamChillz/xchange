@@ -113,19 +113,19 @@ AND transaction_status IN ($3)
 AND network IN ($4)
 AND created_at BETWEEN $5 AND $6
 ORDER BY created_at DESC
-LIMIT COALESCE($8, 20)
-OFFSET COALESCE($7, 0)
+LIMIT $8
+OFFSET $7
 `
 
 type ListAllCoinSwapTransactionsParams struct {
-	CustomerID        int32       `json:"customer_id"`
-	CoinName          []string    `json:"coin_name"`
-	TransactionStatus []string    `json:"transaction_status"`
-	Network           []string    `json:"network"`
-	StartDate         time.Time   `json:"start_date"`
-	EndDate           time.Time   `json:"end_date"`
-	Offset            interface{} `json:"offset"`
-	Limit             interface{} `json:"limit"`
+	CustomerID        int32     `json:"customer_id"`
+	CoinName          []string  `json:"coin_name"`
+	TransactionStatus []string  `json:"transaction_status"`
+	Network           []string  `json:"network"`
+	StartDate         time.Time `json:"start_date"`
+	EndDate           time.Time `json:"end_date"`
+	Offset            int32     `json:"offset"`
+	Limit             int32     `json:"limit"`
 }
 
 func (q *Queries) ListAllCoinSwapTransactions(ctx context.Context, arg ListAllCoinSwapTransactionsParams) ([]Coinswap, error) {
