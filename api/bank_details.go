@@ -26,7 +26,18 @@ func (server Server) GetBankDetails(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		}
 	}()
-	customerPayload := ctx.MustGet(AUTHENTICATIONCONTEXTKEY).(*token.Payload)
+	payload, ok := ctx.Get(AUTHENTICATIONCONTEXTKEY)
+	if !ok {
+		logger.Error().Msg("error getting customer payload from authentication context key")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+	customerPayload, ok := payload.(*token.Payload)
+	if !ok {
+		logger.Error().Interface("payload", payload).Msg("error casting customer payload to token payload")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
 	customerId := customerPayload.CustomerID
 	bankDetails, err := server.storage.GetCustomerBankDetails(ctx, customerId)
 	if err != nil {
