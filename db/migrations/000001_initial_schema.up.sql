@@ -118,7 +118,7 @@ CREATE TABLE coinswap (
     phone_number CHARACTER VARYING(100) NOT NULL,
     coin_address CHARACTER VARYING(200) NOT NULL,
     transaction_ref CHARACTER VARYING(100) UNIQUE NOT NULL,
-    transaction_status CHARACTER VARYING(100) NOT NULL,
+    transaction_status CHARACTER VARYING(100) DEFAULT 'PENDING' NOT NULL,
     current_usdt_ngn_rate CHARACTER VARYING(100) NOT NULL,
     customer_id INT NOT NULL,
     ngn_equivalent numeric(50,8) NOT NULL,
