@@ -8,8 +8,9 @@ package db
 import (
 	"context"
 	"database/sql"
-	"strings"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 const createSwap = `-- name: CreateSwap :one
@@ -107,18 +108,16 @@ func (q *Queries) GetPendingNetworkTransaction(ctx context.Context, arg GetPendi
 
 const listAllCoinSwapTransactions = `-- name: ListAllCoinSwapTransactions :many
 SELECT id, coin_name, coin_amount_to_swap, network, phone_number, coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate, customer_id, ngn_equivalent, payout_status, bank_acc_name, bank_acc_number, bitpowr_ref, trans_address, trans_amount, trans_chain, trans_hash, bank_code, admin_trans_amount, admin_trans_fee, admin_trans_ref, admin_trans_uid, trans_amount_ngn, created_at, updated_at FROM coinswap
-WHERE customer_id = $1
-AND coin_name IN ($2)
-AND transaction_status IN ($3)
-AND network IN ($4)
-AND created_at BETWEEN $5 AND $6
+WHERE coin_name = ANY($1::varchar[])
+AND transaction_status = ANY($2::varchar[])
+AND network = ANY($3::varchar[])
+AND created_at BETWEEN $4 AND $5
 ORDER BY created_at DESC
-LIMIT $8
-OFFSET $7
+LIMIT $7
+OFFSET $6
 `
 
 type ListAllCoinSwapTransactionsParams struct {
-	CustomerID        int32     `json:"customer_id"`
 	CoinName          []string  `json:"coin_name"`
 	TransactionStatus []string  `json:"transaction_status"`
 	Network           []string  `json:"network"`
@@ -129,38 +128,15 @@ type ListAllCoinSwapTransactionsParams struct {
 }
 
 func (q *Queries) ListAllCoinSwapTransactions(ctx context.Context, arg ListAllCoinSwapTransactionsParams) ([]Coinswap, error) {
-	query := listAllCoinSwapTransactions
-	var queryParams []interface{}
-	queryParams = append(queryParams, arg.CustomerID)
-	if len(arg.CoinName) > 0 {
-		for _, v := range arg.CoinName {
-			queryParams = append(queryParams, v)
-		}
-		query = strings.Replace(query, "/*SLICE:coin_name*/?", strings.Repeat(",?", len(arg.CoinName))[1:], 1)
-	} else {
-		query = strings.Replace(query, "/*SLICE:coin_name*/?", "NULL", 1)
-	}
-	if len(arg.TransactionStatus) > 0 {
-		for _, v := range arg.TransactionStatus {
-			queryParams = append(queryParams, v)
-		}
-		query = strings.Replace(query, "/*SLICE:transaction_status*/?", strings.Repeat(",?", len(arg.TransactionStatus))[1:], 1)
-	} else {
-		query = strings.Replace(query, "/*SLICE:transaction_status*/?", "NULL", 1)
-	}
-	if len(arg.Network) > 0 {
-		for _, v := range arg.Network {
-			queryParams = append(queryParams, v)
-		}
-		query = strings.Replace(query, "/*SLICE:network*/?", strings.Repeat(",?", len(arg.Network))[1:], 1)
-	} else {
-		query = strings.Replace(query, "/*SLICE:network*/?", "NULL", 1)
-	}
-	queryParams = append(queryParams, arg.StartDate)
-	queryParams = append(queryParams, arg.EndDate)
-	queryParams = append(queryParams, arg.Offset)
-	queryParams = append(queryParams, arg.Limit)
-	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	rows, err := q.db.QueryContext(ctx, listAllCoinSwapTransactions,
+		pq.Array(arg.CoinName),
+		pq.Array(arg.TransactionStatus),
+		pq.Array(arg.Network),
+		arg.StartDate,
+		arg.EndDate,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}

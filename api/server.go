@@ -53,6 +53,7 @@ func (server *Server) ConfigRouter() {
 
 	authEndpoints := logApiRouter.Use(server.Authenticate)
 	authEndpoints.POST("/token/swap", server.CoinSwap)
+	authEndpoints.GET("/token/swap/history", server.ListCoinSwapHistory)
 	authEndpoints.POST("/token/rate/calculate/ngn", server.GetCoinNGNEquivalent)
 	authEndpoints.GET("/user/bank/details", server.GetBankDetails)
 	authEndpoints.POST("/user/bank/details", server.AddBankDetails)

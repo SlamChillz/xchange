@@ -36,10 +36,9 @@ SELECT COUNT(*) FROM coinswap WHERE customer_id = $1 AND network = $2 AND transa
 
 -- name: ListAllCoinSwapTransactions :many
 SELECT * FROM coinswap
-WHERE customer_id = sqlc.arg('customer_id')
-AND coin_name IN (sqlc.slice('coin_name'))
-AND transaction_status IN (sqlc.slice('transaction_status'))
-AND network IN (sqlc.slice('network'))
+WHERE coin_name = ANY(sqlc.arg('coin_name')::varchar[])
+AND transaction_status = ANY(sqlc.arg('transaction_status')::varchar[])
+AND network = ANY(sqlc.arg('network')::varchar[])
 AND created_at BETWEEN sqlc.arg('start_date') AND sqlc.arg('end_date')
 ORDER BY created_at DESC
 LIMIT sqlc.arg('limit')
