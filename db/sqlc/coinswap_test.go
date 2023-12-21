@@ -18,7 +18,7 @@ func createRandomCoinSwap(t *testing.T) Coinswap {
 	coinswapamount := utils.RandomCoinSwapAmount()
 	coinswaprate := utils.RandomCoinswapRate()
 	arg := CreateSwapParams{
-		CoinName: utils.RandomName(),
+		CoinName: utils.RandomCoinName(),
 		CoinAmountToSwap: fmt.Sprintf("%.8f", coinswapamount),
 		Network: network,
 		PhoneNumber: utils.RandomPhoneNumber(),
