@@ -46,7 +46,7 @@ func GenerateNewAddress(config utils.Config, customerId int32, label, asset, acc
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unable to generate new %s address", asset)
+		return nil, fmt.Errorf("unable to generate new %s address. Bitpowr StatusCoode: %v", asset, response.StatusCode)
 	}
 	var data map[string]interface{}
 	err = json.NewDecoder(response.Body).Decode(&data)
