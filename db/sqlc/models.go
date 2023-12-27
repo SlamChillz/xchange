@@ -59,6 +59,7 @@ type Coinswap struct {
 	TransAmountNgn     sql.NullString `json:"trans_amount_ngn"`
 	CreatedAt          time.Time      `json:"created_at"`
 	UpdatedAt          time.Time      `json:"updated_at"`
+	CustomerAction     string         `json:"customer_action"`
 }
 
 type Customer struct {

@@ -43,3 +43,14 @@ AND created_at BETWEEN sqlc.arg('start_date') AND sqlc.arg('end_date')
 ORDER BY created_at DESC
 LIMIT sqlc.arg('limit')
 OFFSET sqlc.arg('offset');
+
+-- name: CoinSwapUpdateUserPaid :one
+UPDATE coinswap
+SET customer_action = COALESCE(sqlc.arg('transaction_status'), transaction_status)
+WHERE transaction_ref = sqlc.arg('transaction_ref')
+AND customer_id = sqlc.arg('customer_id')
+RETURNING *;
+
+-- name: GetOneCoinSwapTransaction :one
+SELECT * FROM coinswap
+WHERE transaction_ref = sqlc.arg('transaction_ref');

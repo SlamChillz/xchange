@@ -40,6 +40,21 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 	return m.recorder
 }
 
+// CoinSwapUpdateUserPaid mocks base method.
+func (m *MockStore) CoinSwapUpdateUserPaid(arg0 context.Context, arg1 db.CoinSwapUpdateUserPaidParams) (db.Coinswap, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CoinSwapUpdateUserPaid", arg0, arg1)
+	ret0, _ := ret[0].(db.Coinswap)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CoinSwapUpdateUserPaid indicates an expected call of CoinSwapUpdateUserPaid.
+func (mr *MockStoreMockRecorder) CoinSwapUpdateUserPaid(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CoinSwapUpdateUserPaid", reflect.TypeOf((*MockStore)(nil).CoinSwapUpdateUserPaid), arg0, arg1)
+}
+
 // CreateAdmindata mocks base method.
 func (m *MockStore) CreateAdmindata(arg0 context.Context, arg1 db.CreateAdmindataParams) (db.Admindatum, error) {
 	m.ctrl.T.Helper()
@@ -143,6 +158,21 @@ func (m *MockStore) GetCustomerByPhoneNumber(arg0 context.Context, arg1 string) 
 func (mr *MockStoreMockRecorder) GetCustomerByPhoneNumber(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerByPhoneNumber", reflect.TypeOf((*MockStore)(nil).GetCustomerByPhoneNumber), arg0, arg1)
+}
+
+// GetOneCoinSwapTransaction mocks base method.
+func (m *MockStore) GetOneCoinSwapTransaction(arg0 context.Context, arg1 string) (db.Coinswap, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOneCoinSwapTransaction", arg0, arg1)
+	ret0, _ := ret[0].(db.Coinswap)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOneCoinSwapTransaction indicates an expected call of GetOneCoinSwapTransaction.
+func (mr *MockStoreMockRecorder) GetOneCoinSwapTransaction(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOneCoinSwapTransaction", reflect.TypeOf((*MockStore)(nil).GetOneCoinSwapTransaction), arg0, arg1)
 }
 
 // GetPendingNetworkTransaction mocks base method.

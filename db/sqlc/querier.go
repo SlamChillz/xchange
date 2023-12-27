@@ -10,6 +10,7 @@ import (
 )
 
 type Querier interface {
+	CoinSwapUpdateUserPaid(ctx context.Context, arg CoinSwapUpdateUserPaidParams) (Coinswap, error)
 	CreateAdmindata(ctx context.Context, arg CreateAdmindataParams) (Admindatum, error)
 	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error)
 	CreateSwap(ctx context.Context, arg CreateSwapParams) (Coinswap, error)
@@ -17,6 +18,7 @@ type Querier interface {
 	GetCustomerBankDetails(ctx context.Context, customerID int32) (Bankdetail, error)
 	GetCustomerByEmail(ctx context.Context, email string) (Customer, error)
 	GetCustomerByPhoneNumber(ctx context.Context, phone string) (Customer, error)
+	GetOneCoinSwapTransaction(ctx context.Context, transactionRef string) (Coinswap, error)
 	GetPendingNetworkTransaction(ctx context.Context, arg GetPendingNetworkTransactionParams) (int64, error)
 	GetUsdtAddress(ctx context.Context, customerID int32) (sql.NullString, error)
 	GetUsdtBscAddress(ctx context.Context, customerID int32) (sql.NullString, error)

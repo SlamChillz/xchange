@@ -13,6 +13,56 @@ import (
 	"github.com/lib/pq"
 )
 
+const coinSwapUpdateUserPaid = `-- name: CoinSwapUpdateUserPaid :one
+UPDATE coinswap
+SET customer_action = COALESCE($1, transaction_status)
+WHERE transaction_ref = $2
+AND customer_id = $3
+RETURNING id, coin_name, coin_amount_to_swap, network, phone_number, coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate, customer_id, ngn_equivalent, payout_status, bank_acc_name, bank_acc_number, bitpowr_ref, trans_address, trans_amount, trans_chain, trans_hash, bank_code, admin_trans_amount, admin_trans_fee, admin_trans_ref, admin_trans_uid, trans_amount_ngn, created_at, updated_at, customer_action
+`
+
+type CoinSwapUpdateUserPaidParams struct {
+	TransactionStatus string `json:"transaction_status"`
+	TransactionRef    string `json:"transaction_ref"`
+	CustomerID        int32  `json:"customer_id"`
+}
+
+func (q *Queries) CoinSwapUpdateUserPaid(ctx context.Context, arg CoinSwapUpdateUserPaidParams) (Coinswap, error) {
+	row := q.db.QueryRowContext(ctx, coinSwapUpdateUserPaid, arg.TransactionStatus, arg.TransactionRef, arg.CustomerID)
+	var i Coinswap
+	err := row.Scan(
+		&i.ID,
+		&i.CoinName,
+		&i.CoinAmountToSwap,
+		&i.Network,
+		&i.PhoneNumber,
+		&i.CoinAddress,
+		&i.TransactionRef,
+		&i.TransactionStatus,
+		&i.CurrentUsdtNgnRate,
+		&i.CustomerID,
+		&i.NgnEquivalent,
+		&i.PayoutStatus,
+		&i.BankAccName,
+		&i.BankAccNumber,
+		&i.BitpowrRef,
+		&i.TransAddress,
+		&i.TransAmount,
+		&i.TransChain,
+		&i.TransHash,
+		&i.BankCode,
+		&i.AdminTransAmount,
+		&i.AdminTransFee,
+		&i.AdminTransRef,
+		&i.AdminTransUid,
+		&i.TransAmountNgn,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.CustomerAction,
+	)
+	return i, err
+}
+
 const createSwap = `-- name: CreateSwap :one
 INSERT INTO coinswap (
     coin_name, coin_amount_to_swap, network, phone_number,
@@ -21,7 +71,7 @@ INSERT INTO coinswap (
 ) VALUES (
     $1, $2, $3, $4, $5, $6,
     $7, $8, $9, $10, $11, $12, $13
-) RETURNING id, coin_name, coin_amount_to_swap, network, phone_number, coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate, customer_id, ngn_equivalent, payout_status, bank_acc_name, bank_acc_number, bitpowr_ref, trans_address, trans_amount, trans_chain, trans_hash, bank_code, admin_trans_amount, admin_trans_fee, admin_trans_ref, admin_trans_uid, trans_amount_ngn, created_at, updated_at
+) RETURNING id, coin_name, coin_amount_to_swap, network, phone_number, coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate, customer_id, ngn_equivalent, payout_status, bank_acc_name, bank_acc_number, bitpowr_ref, trans_address, trans_amount, trans_chain, trans_hash, bank_code, admin_trans_amount, admin_trans_fee, admin_trans_ref, admin_trans_uid, trans_amount_ngn, created_at, updated_at, customer_action
 `
 
 type CreateSwapParams struct {
@@ -85,6 +135,48 @@ func (q *Queries) CreateSwap(ctx context.Context, arg CreateSwapParams) (Coinswa
 		&i.TransAmountNgn,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CustomerAction,
+	)
+	return i, err
+}
+
+const getOneCoinSwapTransaction = `-- name: GetOneCoinSwapTransaction :one
+SELECT id, coin_name, coin_amount_to_swap, network, phone_number, coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate, customer_id, ngn_equivalent, payout_status, bank_acc_name, bank_acc_number, bitpowr_ref, trans_address, trans_amount, trans_chain, trans_hash, bank_code, admin_trans_amount, admin_trans_fee, admin_trans_ref, admin_trans_uid, trans_amount_ngn, created_at, updated_at, customer_action FROM coinswap
+WHERE transaction_ref = $1
+`
+
+func (q *Queries) GetOneCoinSwapTransaction(ctx context.Context, transactionRef string) (Coinswap, error) {
+	row := q.db.QueryRowContext(ctx, getOneCoinSwapTransaction, transactionRef)
+	var i Coinswap
+	err := row.Scan(
+		&i.ID,
+		&i.CoinName,
+		&i.CoinAmountToSwap,
+		&i.Network,
+		&i.PhoneNumber,
+		&i.CoinAddress,
+		&i.TransactionRef,
+		&i.TransactionStatus,
+		&i.CurrentUsdtNgnRate,
+		&i.CustomerID,
+		&i.NgnEquivalent,
+		&i.PayoutStatus,
+		&i.BankAccName,
+		&i.BankAccNumber,
+		&i.BitpowrRef,
+		&i.TransAddress,
+		&i.TransAmount,
+		&i.TransChain,
+		&i.TransHash,
+		&i.BankCode,
+		&i.AdminTransAmount,
+		&i.AdminTransFee,
+		&i.AdminTransRef,
+		&i.AdminTransUid,
+		&i.TransAmountNgn,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.CustomerAction,
 	)
 	return i, err
 }
@@ -107,7 +199,7 @@ func (q *Queries) GetPendingNetworkTransaction(ctx context.Context, arg GetPendi
 }
 
 const listAllCoinSwapTransactions = `-- name: ListAllCoinSwapTransactions :many
-SELECT id, coin_name, coin_amount_to_swap, network, phone_number, coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate, customer_id, ngn_equivalent, payout_status, bank_acc_name, bank_acc_number, bitpowr_ref, trans_address, trans_amount, trans_chain, trans_hash, bank_code, admin_trans_amount, admin_trans_fee, admin_trans_ref, admin_trans_uid, trans_amount_ngn, created_at, updated_at FROM coinswap
+SELECT id, coin_name, coin_amount_to_swap, network, phone_number, coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate, customer_id, ngn_equivalent, payout_status, bank_acc_name, bank_acc_number, bitpowr_ref, trans_address, trans_amount, trans_chain, trans_hash, bank_code, admin_trans_amount, admin_trans_fee, admin_trans_ref, admin_trans_uid, trans_amount_ngn, created_at, updated_at, customer_action FROM coinswap
 WHERE coin_name = ANY($1::varchar[])
 AND transaction_status = ANY($2::varchar[])
 AND network = ANY($3::varchar[])
@@ -172,6 +264,7 @@ func (q *Queries) ListAllCoinSwapTransactions(ctx context.Context, arg ListAllCo
 			&i.TransAmountNgn,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.CustomerAction,
 		); err != nil {
 			return nil, err
 		}
@@ -197,7 +290,7 @@ SET
     transaction_status = COALESCE($6, transaction_status),
     trans_amount_ngn = COALESCE($7, trans_amount_ngn)
 WHERE coin_name = $8 AND transaction_status = transaction_status AND coin_address = $9
-RETURNING id, coin_name, coin_amount_to_swap, network, phone_number, coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate, customer_id, ngn_equivalent, payout_status, bank_acc_name, bank_acc_number, bitpowr_ref, trans_address, trans_amount, trans_chain, trans_hash, bank_code, admin_trans_amount, admin_trans_fee, admin_trans_ref, admin_trans_uid, trans_amount_ngn, created_at, updated_at
+RETURNING id, coin_name, coin_amount_to_swap, network, phone_number, coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate, customer_id, ngn_equivalent, payout_status, bank_acc_name, bank_acc_number, bitpowr_ref, trans_address, trans_amount, trans_chain, trans_hash, bank_code, admin_trans_amount, admin_trans_fee, admin_trans_ref, admin_trans_uid, trans_amount_ngn, created_at, updated_at, customer_action
 `
 
 type UpdateSwapWithBitpowrInfoParams struct {
@@ -253,6 +346,7 @@ func (q *Queries) UpdateSwapWithBitpowrInfo(ctx context.Context, arg UpdateSwapW
 		&i.TransAmountNgn,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CustomerAction,
 	)
 	return i, err
 }
@@ -265,7 +359,7 @@ SET
    admin_trans_fee = COALESCE($3, admin_trans_fee),
    admin_trans_ref = COALESCE($4, admin_trans_ref)
 WHERE transaction_ref = $5
-RETURNING id, coin_name, coin_amount_to_swap, network, phone_number, coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate, customer_id, ngn_equivalent, payout_status, bank_acc_name, bank_acc_number, bitpowr_ref, trans_address, trans_amount, trans_chain, trans_hash, bank_code, admin_trans_amount, admin_trans_fee, admin_trans_ref, admin_trans_uid, trans_amount_ngn, created_at, updated_at
+RETURNING id, coin_name, coin_amount_to_swap, network, phone_number, coin_address, transaction_ref, transaction_status, current_usdt_ngn_rate, customer_id, ngn_equivalent, payout_status, bank_acc_name, bank_acc_number, bitpowr_ref, trans_address, trans_amount, trans_chain, trans_hash, bank_code, admin_trans_amount, admin_trans_fee, admin_trans_ref, admin_trans_uid, trans_amount_ngn, created_at, updated_at, customer_action
 `
 
 type UpdateSwapWithShutterInfoParams struct {
@@ -313,6 +407,7 @@ func (q *Queries) UpdateSwapWithShutterInfo(ctx context.Context, arg UpdateSwapW
 		&i.TransAmountNgn,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CustomerAction,
 	)
 	return i, err
 }

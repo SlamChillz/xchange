@@ -155,3 +155,85 @@ func (server *Server) CoinSwap(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, &coinSwapResponse)
 }
+
+
+type CoinSwapStatusUpdateRequest struct {
+	TransactionStatus string `json:"transaction_status" binding:"required,oneof=CANCEL PAID"`
+}
+
+
+func (server *Server) CoinSwapStatusUpdate(ctx *gin.Context) {
+	var err error
+	var req CoinSwapStatusUpdateRequest
+	var ve validator.ValidationErrors
+	transactionRef, ok := ctx.Params.Get("ref")
+	swap := make(chan db.Coinswap)
+	swapErr := make(chan error)
+	go func(store db.Store)  {
+		doesSwapExist, err := store.GetOneCoinSwapTransaction(context.Background(), transactionRef)
+		if err != nil {
+			swapErr <- err
+			swap <- db.Coinswap{}
+			return
+		}
+		swapErr <- nil
+		swap <- doesSwapExist
+	}(server.storage)
+	if !ok {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "missing transaction reference"})
+		return
+	}
+	err = ctx.ShouldBindJSON(&req)
+	if err != nil {
+		if errors.As(err, &ve) {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "unknown transaction status, expect CANCEL or PAID"})
+		} else {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid json request body"})
+		}
+		return
+	}
+	payload, ok := ctx.Get(AUTHENTICATIONCONTEXTKEY)
+	if !ok{
+		logger.Error().Msg("error getting customer payload from authentication context key")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+	customerPayload, ok := payload.(*token.Payload)
+	if !ok {
+		logger.Error().Interface("payload", payload).Msg("error casting customer payload to token payload")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+	customerId := customerPayload.CustomerID
+	if err := <-swapErr; err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "transaction not found"})
+			return
+		}
+		logger.Error().Err(err).Msg("error getting swap")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		return
+	}
+	swapDetails := <-swap
+	if swapDetails.CustomerID != customerId {
+		ctx.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+	// Consider race condition here. What if the transaction status is updated by background workers for the same transaction
+	if swapDetails.CustomerAction == "CREATED" {
+		arg := db.CoinSwapUpdateUserPaidParams{
+			TransactionStatus: req.TransactionStatus,
+			TransactionRef: transactionRef,
+			CustomerID: customerId,
+		}
+		_, err = server.storage.CoinSwapUpdateUserPaid(context.Background(), arg)
+		if err != nil {
+			logger.Error().Err(err).Msg("error updating swap")
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"message": "transaction status updated successfully"})
+		return
+	}
+	ctx.JSON(http.StatusUnprocessableEntity, gin.H{"error": "transaction is in a settled state"})
+}
