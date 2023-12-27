@@ -76,7 +76,7 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 	}
 	// Create the customer
 	// Save to redis and send it to a queue
-	customer, _ = server.storage.CreateCustomer(ctx, db.CreateCustomerParams{
+	customer, err = server.storage.CreateCustomer(ctx, db.CreateCustomerParams{
 		FirstName: req.FirstName,
 		LastName: req.LastName,
 		Email: req.Email,
