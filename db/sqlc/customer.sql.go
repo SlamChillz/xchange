@@ -81,12 +81,70 @@ func (q *Queries) GetCustomerByEmail(ctx context.Context, email string) (Custome
 	return i, err
 }
 
+const getCustomerById = `-- name: GetCustomerById :one
+SELECT id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at FROM customer WHERE id = $1
+`
+
+func (q *Queries) GetCustomerById(ctx context.Context, id int32) (Customer, error) {
+	row := q.db.QueryRowContext(ctx, getCustomerById, id)
+	var i Customer
+	err := row.Scan(
+		&i.ID,
+		&i.LastLogin,
+		&i.Photo,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.Password,
+		&i.Phone,
+		&i.IsActive,
+		&i.IsStaff,
+		&i.IsSupercustomer,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getCustomerByPhoneNumber = `-- name: GetCustomerByPhoneNumber :one
 SELECT id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at FROM customer WHERE phone = $1
 `
 
 func (q *Queries) GetCustomerByPhoneNumber(ctx context.Context, phone string) (Customer, error) {
 	row := q.db.QueryRowContext(ctx, getCustomerByPhoneNumber, phone)
+	var i Customer
+	err := row.Scan(
+		&i.ID,
+		&i.LastLogin,
+		&i.Photo,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.Password,
+		&i.Phone,
+		&i.IsActive,
+		&i.IsStaff,
+		&i.IsSupercustomer,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateCustomerPassword = `-- name: UpdateCustomerPassword :one
+UPDATE customer
+SET password = $2
+WHERE id = $1
+RETURNING id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at
+`
+
+type UpdateCustomerPasswordParams struct {
+	ID       int32  `json:"id"`
+	Password string `json:"password"`
+}
+
+func (q *Queries) UpdateCustomerPassword(ctx context.Context, arg UpdateCustomerPasswordParams) (Customer, error) {
+	row := q.db.QueryRowContext(ctx, updateCustomerPassword, arg.ID, arg.Password)
 	var i Customer
 	err := row.Scan(
 		&i.ID,

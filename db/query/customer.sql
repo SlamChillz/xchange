@@ -14,3 +14,12 @@ SELECT * FROM customer WHERE email = $1;
 
 -- name: GetCustomerByPhoneNumber :one
 SELECT * FROM customer WHERE phone = $1;
+
+-- name: GetCustomerById :one
+SELECT * FROM customer WHERE id = $1;
+
+-- name: UpdateCustomerPassword :one
+UPDATE customer
+SET password = $2
+WHERE id = $1
+RETURNING *;
