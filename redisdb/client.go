@@ -16,6 +16,7 @@ var (
 type RedisClient interface {
 	Set(context.Context, string, interface{}, time.Duration) (string, error)
 	Get(context.Context, string) (string, error)
+	Delete(context.Context, string) (int64, error)
 }
 
 type redisClient struct {
@@ -42,4 +43,12 @@ func (rd *redisClient) Get(ctx context.Context, key string) (string, error) {
 		return "", err
 	}
 	return storeValue, nil
+}
+
+func (rd *redisClient) Delete(ctx context.Context, key string) (int64, error) {
+	deleted, err := rd.client.Del(ctx, key).Result()
+	if err != nil {
+		return 0, err
+	}
+	return deleted, err
 }
