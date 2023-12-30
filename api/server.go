@@ -37,6 +37,7 @@ func NewServer(
 		v.RegisterValidation("phonenumber", validatePhoneNumber)
 		v.RegisterValidation("coinname", validateCoinName)
 		v.RegisterValidation("network", validateNetwork)
+		v.RegisterValidation("oldpassword", validateOldPassword)
 	}
 	server.ConfigRouter()
 	return server, nil
@@ -58,6 +59,7 @@ func (server *Server) ConfigRouter() {
 	authEndpoints.POST("/token/rate/calculate/ngn", server.GetCoinNGNEquivalent)
 	authEndpoints.GET("/user/bank/details", server.GetBankDetails)
 	authEndpoints.POST("/user/bank/details", server.AddBankDetails)
+	authEndpoints.PATCH("/user/password/change", server.ChangePassword)
 
 	server.router = router
 }
