@@ -40,10 +40,16 @@ func (server *Server) LoginCustomer(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
-	accessToken, _, err := server.token.CreateToken(customer.ID, server.config.JWT_ACCESS_TOKEN_DURATION)
+	accessToken, tokenPayload, err := server.token.CreateToken(customer.ID, server.config.JWT_ACCESS_TOKEN_DURATION)
 	if err != nil {
 		// log the error
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	_, err = server.redisClient.Set(ctx, tokenPayload.ID, tokenPayload, server.config.JWT_ACCESS_TOKEN_DURATION)
+	if err != nil {
+		logger.Error().Interface("token_payload", tokenPayload).Err(err).Msg("unable to persist payload in redis store")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
 	resp := LoginCustomerResponse{

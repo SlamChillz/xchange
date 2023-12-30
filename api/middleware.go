@@ -54,7 +54,14 @@ func (server *Server) Authenticate(ctx *gin.Context) {
 	accessToken := authHeaderValues[1]
 	customer, err := server.token.VerifyToken(accessToken)
 	if err != nil {
+		logger.Error().Err(err).Str("access token", accessToken).Msg("could not verify access token")
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid access token"})
+		return
+	}
+	_, err = server.redisClient.Get(ctx, customer.ID)
+	if err != nil {
+		logger.Info().Int32("customer id", customer.CustomerID).Msg("trying access with a redis expired token")
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "expired access token"})
 		return
 	}
 	ctx.Set(AUTHENTICATIONCONTEXTKEY, customer)
