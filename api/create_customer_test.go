@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -56,7 +57,8 @@ func (c *CreateCustomerParamsMatcher) Matches(x interface{}) bool {
 	if !ok {
 		return false
 	}
-	err := utils.CheckPassword(arg.Password, c.password)
+
+	err := utils.CheckPassword(arg.Password.String, c.password)
 	if err != nil {
 		return false
 	}
@@ -81,8 +83,14 @@ func TestCreateCustomerRequest(t *testing.T) {
 		FirstName: "John",
 		LastName: "Benjamin",
 		Email: "slamchillz@gmail.com",
-		Phone: "08054444667",
-		Password: hashedPassword,
+		Phone: sql.NullString{
+			String: "+2347030000000",
+			Valid: true,
+		},
+		Password: sql.NullString{
+			String: hashedPassword,
+			Valid: true,
+		},
 	}
 	testCases := []struct {
 		name string
@@ -111,7 +119,10 @@ func TestCreateCustomerRequest(t *testing.T) {
 				FirstName: customer.FirstName,
 				LastName: customer.LastName,
 				Email: customer.Email,
-				Phone: "+234" + customer.Phone[1:],
+				Phone: sql.NullString{
+					String: "+234" + customer.Phone.String[1:], // remove the first 0
+					Valid: true,
+				},
 			}
 			storage.EXPECT().
 				CreateCustomer(gomock.Any(), EqCreateCustomerParams(arg, password)).

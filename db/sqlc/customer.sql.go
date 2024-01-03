@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createCustomer = `-- name: CreateCustomer :one
@@ -15,18 +16,28 @@ INSERT INTO customer (
     last_name,
     email,
     password,
-    phone
+    phone,
+    photo,
+    google_id
 ) VALUES (
-    $1, $2, $3, $4, $5
-) RETURNING id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7
+) RETURNING id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at, google_id
 `
 
 type CreateCustomerParams struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	Phone     string `json:"phone"`
+	FirstName string         `json:"first_name"`
+	LastName  string         `json:"last_name"`
+	Email     string         `json:"email"`
+	Password  sql.NullString `json:"password"`
+	Phone     sql.NullString `json:"phone"`
+	Photo     sql.NullString `json:"photo"`
+	GoogleID  sql.NullString `json:"google_id"`
 }
 
 func (q *Queries) CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error) {
@@ -36,6 +47,8 @@ func (q *Queries) CreateCustomer(ctx context.Context, arg CreateCustomerParams) 
 		arg.Email,
 		arg.Password,
 		arg.Phone,
+		arg.Photo,
+		arg.GoogleID,
 	)
 	var i Customer
 	err := row.Scan(
@@ -52,12 +65,13 @@ func (q *Queries) CreateCustomer(ctx context.Context, arg CreateCustomerParams) 
 		&i.IsSupercustomer,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.GoogleID,
 	)
 	return i, err
 }
 
 const getCustomerByEmail = `-- name: GetCustomerByEmail :one
-SELECT id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at FROM customer WHERE email = $1
+SELECT id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at, google_id FROM customer WHERE email = $1
 `
 
 func (q *Queries) GetCustomerByEmail(ctx context.Context, email string) (Customer, error) {
@@ -77,12 +91,39 @@ func (q *Queries) GetCustomerByEmail(ctx context.Context, email string) (Custome
 		&i.IsSupercustomer,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.GoogleID,
+	)
+	return i, err
+}
+
+const getCustomerByGoogleId = `-- name: GetCustomerByGoogleId :one
+SELECT id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at, google_id FROM customer WHERE google_id = $1
+`
+
+func (q *Queries) GetCustomerByGoogleId(ctx context.Context, googleID sql.NullString) (Customer, error) {
+	row := q.db.QueryRowContext(ctx, getCustomerByGoogleId, googleID)
+	var i Customer
+	err := row.Scan(
+		&i.ID,
+		&i.LastLogin,
+		&i.Photo,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.Password,
+		&i.Phone,
+		&i.IsActive,
+		&i.IsStaff,
+		&i.IsSupercustomer,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.GoogleID,
 	)
 	return i, err
 }
 
 const getCustomerById = `-- name: GetCustomerById :one
-SELECT id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at FROM customer WHERE id = $1
+SELECT id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at, google_id FROM customer WHERE id = $1
 `
 
 func (q *Queries) GetCustomerById(ctx context.Context, id int32) (Customer, error) {
@@ -102,15 +143,16 @@ func (q *Queries) GetCustomerById(ctx context.Context, id int32) (Customer, erro
 		&i.IsSupercustomer,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.GoogleID,
 	)
 	return i, err
 }
 
 const getCustomerByPhoneNumber = `-- name: GetCustomerByPhoneNumber :one
-SELECT id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at FROM customer WHERE phone = $1
+SELECT id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at, google_id FROM customer WHERE phone = $1
 `
 
-func (q *Queries) GetCustomerByPhoneNumber(ctx context.Context, phone string) (Customer, error) {
+func (q *Queries) GetCustomerByPhoneNumber(ctx context.Context, phone sql.NullString) (Customer, error) {
 	row := q.db.QueryRowContext(ctx, getCustomerByPhoneNumber, phone)
 	var i Customer
 	err := row.Scan(
@@ -127,6 +169,7 @@ func (q *Queries) GetCustomerByPhoneNumber(ctx context.Context, phone string) (C
 		&i.IsSupercustomer,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.GoogleID,
 	)
 	return i, err
 }
@@ -135,12 +178,12 @@ const updateCustomerPassword = `-- name: UpdateCustomerPassword :one
 UPDATE customer
 SET password = $2
 WHERE id = $1
-RETURNING id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at
+RETURNING id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at, google_id
 `
 
 type UpdateCustomerPasswordParams struct {
-	ID       int32  `json:"id"`
-	Password string `json:"password"`
+	ID       int32          `json:"id"`
+	Password sql.NullString `json:"password"`
 }
 
 func (q *Queries) UpdateCustomerPassword(ctx context.Context, arg UpdateCustomerPasswordParams) (Customer, error) {
@@ -160,6 +203,7 @@ func (q *Queries) UpdateCustomerPassword(ctx context.Context, arg UpdateCustomer
 		&i.IsSupercustomer,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.GoogleID,
 	)
 	return i, err
 }

@@ -22,6 +22,8 @@ var validatePhoneNumber validator.Func = func(fieldLevel validator.FieldLevel) b
 
 func genrateFieldErrorMessage(field string) (string, string) {
 	switch field {
+	case "Token":
+		return "token", "invalid token identity"
 	case "CoinName":
 		return "coin_name", "Invalid coin name"
 	case "Network":

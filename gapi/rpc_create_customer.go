@@ -2,12 +2,13 @@ package gapi
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
+	"github.com/lib/pq"
 	"github.com/slamchillz/xchange/db/sqlc"
 	"github.com/slamchillz/xchange/pb"
 	"github.com/slamchillz/xchange/utils"
-	"github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -27,8 +28,14 @@ func (server *Server) CreateCustomer(ctx context.Context, req *pb.CreateCustomer
 		FirstName: req.GetFirstName(),
 		LastName: req.GetLastName(),
 		Email: req.GetEmail(),
-		Phone: phoneNumber,
-		Password: hashedPassword,
+		Phone: sql.NullString{
+			String: phoneNumber,
+			Valid: true,
+		},
+		Password: sql.NullString{
+			String: hashedPassword,
+			Valid: true,
+		},
 	})
 	if err != nil {
 		if pgErr, ok := err.(*pq.Error); ok && pgErr.Code == "23505"{

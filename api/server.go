@@ -51,6 +51,8 @@ func (server *Server) ConfigRouter() {
 	logApiRouter := apiRouter.Use(server.HTTPLogger)
 	logApiRouter.POST("/user/signup", server.CreateCustomer)
 	logApiRouter.POST("/user/login", server.LoginCustomer)
+	logApiRouter.POST("/user/google/signup", server.GoogleSignUp)
+	logApiRouter.POST("/user/google/signin", server.GoogleSignIn)
 
 	authEndpoints := logApiRouter.Use(server.Authenticate)
 	authEndpoints.POST("/token/swap", server.CoinSwap)

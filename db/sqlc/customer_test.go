@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 
 	"github.com/slamchillz/xchange/utils"
@@ -14,8 +15,14 @@ func createRandomCustomer(t *testing.T) Customer {
 		FirstName: utils.RandomName(),
 		LastName:  utils.RandomName(),
 		Email:     utils.RandomEmail(),
-		Password:  utils.RandomString(8),
-		Phone:     utils.RandomPhoneNumber(),
+		Password:  sql.NullString{
+			String: utils.RandomString(8),
+			Valid:  true,
+		},
+		Phone: sql.NullString{
+			String: utils.RandomPhoneNumber(),
+			Valid:  true,
+		},
 	}
 	customer, err := testQueries.CreateCustomer(context.Background(), arg)
 	require.NoError(t, err)

@@ -68,7 +68,7 @@ func (server *Server) ChangePassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	err = utils.CheckPassword(customer.Password, req.OldPassword)
+	err = utils.CheckPassword(customer.Password.String, req.OldPassword)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "incorrect old password"})
 		return
@@ -81,7 +81,10 @@ func (server *Server) ChangePassword(ctx *gin.Context) {
 	}
 	_, err = server.storage.UpdateCustomerPassword(ctx, db.UpdateCustomerPasswordParams{
 		ID: customerId,
-		Password: newPassword,
+		Password: sql.NullString{
+			String: newPassword,
+			Valid: true,
+		},
 	})
 	if err != nil {
 		logger.Error().Err(err).Int32("customerid", customerId).Str("new password", req.NewPassword).Msg("Could not update new password into database")

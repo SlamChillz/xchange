@@ -12,7 +12,7 @@ func convertCustomerResponse(customer db.Customer) *pb.Customer {
 		FirstName: customer.FirstName,
 		LastName: customer.LastName,
 		Email: customer.Email,
-		Phone: customer.Phone,
+		Phone: customer.Phone.String,
 		IsActive: customer.IsActive,
 		IsStaff: customer.IsStaff,
 		IsSupercustomer: customer.IsSupercustomer,

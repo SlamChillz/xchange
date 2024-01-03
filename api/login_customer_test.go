@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -24,8 +25,14 @@ func TestLoginCustomerRequest(t *testing.T) {
 		FirstName: "John",
 		LastName: "Benjamin",
 		Email: "slamchillz@gmail.com",
-		Phone: "08054444667",
-		Password: hashedPassword,
+		Phone: sql.NullString{
+			String: "+2347030000000",
+			Valid: true,
+		},
+		Password: sql.NullString{
+			String: hashedPassword,
+			Valid: true,
+		},
 	}
 	testCases := []struct {
 		name string

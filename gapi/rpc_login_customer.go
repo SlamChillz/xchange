@@ -21,7 +21,7 @@ func (server *Server) LoginCustomer(ctx context.Context, req *pb.LoginCustomerRe
 		// log the error
 		return nil, status.Errorf(codes.Internal, fmt.Sprintf("Internal server error: %v", err.Error()))
 	}
-	err = utils.CheckPassword(customer.Password, req.Password)
+	err = utils.CheckPassword(customer.Password.String, req.Password)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid credentials")
 	}

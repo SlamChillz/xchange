@@ -145,6 +145,21 @@ func (mr *MockStoreMockRecorder) GetCustomerByEmail(arg0, arg1 any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerByEmail", reflect.TypeOf((*MockStore)(nil).GetCustomerByEmail), arg0, arg1)
 }
 
+// GetCustomerByGoogleId mocks base method.
+func (m *MockStore) GetCustomerByGoogleId(arg0 context.Context, arg1 sql.NullString) (db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCustomerByGoogleId", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCustomerByGoogleId indicates an expected call of GetCustomerByGoogleId.
+func (mr *MockStoreMockRecorder) GetCustomerByGoogleId(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerByGoogleId", reflect.TypeOf((*MockStore)(nil).GetCustomerByGoogleId), arg0, arg1)
+}
+
 // GetCustomerById mocks base method.
 func (m *MockStore) GetCustomerById(arg0 context.Context, arg1 int32) (db.Customer, error) {
 	m.ctrl.T.Helper()
@@ -161,7 +176,7 @@ func (mr *MockStoreMockRecorder) GetCustomerById(arg0, arg1 any) *gomock.Call {
 }
 
 // GetCustomerByPhoneNumber mocks base method.
-func (m *MockStore) GetCustomerByPhoneNumber(arg0 context.Context, arg1 string) (db.Customer, error) {
+func (m *MockStore) GetCustomerByPhoneNumber(arg0 context.Context, arg1 sql.NullString) (db.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCustomerByPhoneNumber", arg0, arg1)
 	ret0, _ := ret[0].(db.Customer)

@@ -69,13 +69,14 @@ type Customer struct {
 	FirstName       string         `json:"first_name"`
 	LastName        string         `json:"last_name"`
 	Email           string         `json:"email"`
-	Password        string         `json:"password"`
-	Phone           string         `json:"phone"`
+	Password        sql.NullString `json:"password"`
+	Phone           sql.NullString `json:"phone"`
 	IsActive        bool           `json:"is_active"`
 	IsStaff         bool           `json:"is_staff"`
 	IsSupercustomer bool           `json:"is_supercustomer"`
 	CreatedAt       time.Time      `json:"created_at"`
 	UpdatedAt       time.Time      `json:"updated_at"`
+	GoogleID        sql.NullString `json:"google_id"`
 }
 
 type Customerasset struct {

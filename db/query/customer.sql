@@ -4,9 +4,17 @@ INSERT INTO customer (
     last_name,
     email,
     password,
-    phone
+    phone,
+    photo,
+    google_id
 ) VALUES (
-    $1, $2, $3, $4, $5
+    sqlc.arg('first_name'),
+    sqlc.arg('last_name'),
+    sqlc.arg('email'),
+    sqlc.arg('password'),
+    sqlc.arg('phone'),
+    sqlc.arg('photo'),
+    sqlc.arg('google_id')
 ) RETURNING *;
 
 -- name: GetCustomerByEmail :one
@@ -17,6 +25,9 @@ SELECT * FROM customer WHERE phone = $1;
 
 -- name: GetCustomerById :one
 SELECT * FROM customer WHERE id = $1;
+
+-- name: GetCustomerByGoogleId :one
+SELECT * FROM customer WHERE google_id = $1;
 
 -- name: UpdateCustomerPassword :one
 UPDATE customer

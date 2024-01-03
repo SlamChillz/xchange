@@ -1,12 +1,16 @@
 package api
 
 import (
+	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/lib/pq"
 	db "github.com/slamchillz/xchange/db/sqlc"
 	"github.com/slamchillz/xchange/utils"
@@ -59,7 +63,10 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
-		customer, err = server.storage.GetCustomerByPhoneNumber(ctx, req.PhoneNumber)
+		customer, err = server.storage.GetCustomerByPhoneNumber(ctx, sql.NullString{
+			String: req.PhoneNumber,
+			Valid: true,
+		})
 		if err != nil {
 			if !errors.Is(err, sql.ErrNoRows) {
 				logger.Error().Err(err).Msg("error getting customer by phone number")
@@ -80,8 +87,14 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 		FirstName: req.FirstName,
 		LastName: req.LastName,
 		Email: req.Email,
-		Phone: req.PhoneNumber,
-		Password: hashedPassword,
+		Phone: sql.NullString{
+			String: req.PhoneNumber,
+			Valid: true,
+		},
+		Password: sql.NullString{
+			String: hashedPassword,
+			Valid: true,
+		},
 	})
 	if err != nil {
 		if pgErr, ok := err.(*pq.Error); ok && pgErr.Code == "23505"{
@@ -110,11 +123,114 @@ func CreateCustomerResponse(customer db.Customer) CustomerResponse {
 		FirstName: customer.FirstName,
 		LastName: customer.LastName,
 		Email: customer.Email,
-		PhoneNumber: customer.Phone,
+		PhoneNumber: customer.Phone.String,
 		IsActive: customer.IsActive,
 		IsStaff: customer.IsStaff,
 		IsSupercustomer: customer.IsSupercustomer,
 		CreatedAt: customer.CreatedAt,
 		UpdatedAt: customer.UpdatedAt,
 	}
+}
+
+
+type GoogleAuthRequest struct {
+	Token string `json:"token" binding:"required"`
+}
+
+
+func (server *Server) GoogleSignUp(ctx *gin.Context) {
+	var req GoogleAuthRequest
+	var ve validator.ValidationErrors
+	err := ctx.ShouldBindJSON(&req)
+	reqErr := CreateSwapError{}
+	if err != nil {
+		if errors.As(err, &ve) {
+			for _, e := range ve {
+				field := e.Field()
+				key, value := genrateFieldErrorMessage(field)
+				if key != "" {
+					reqErr[key] = value
+				}
+			}
+		} else {
+			logger.Error().Err(err).Msg("error binding request body")
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid json request body"})
+			return
+		}
+	}
+	if len(reqErr) > 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": reqErr})
+		return
+	}
+	userInfo, err := getUserInfo(req.Token)
+	if err != nil {
+		logger.Error().Err(err).Msg("error getting token info")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid token"})
+		return
+	}
+	if !userInfo.EmailVerified {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "email not verified"})
+		return
+	}
+	_, err = server.storage.CreateCustomer(ctx, db.CreateCustomerParams{
+		FirstName: userInfo.FirstName,
+		LastName: userInfo.LastName,
+		Email: userInfo.Email,
+		Photo: sql.NullString{
+			String: userInfo.Picture,
+			Valid: true,
+		},
+		GoogleID: sql.NullString{
+			String: userInfo.Sub,
+			Valid: true,
+		},
+		Password: sql.NullString{},
+		Phone: sql.NullString{},
+	})
+	if err != nil {
+		if pgErr, ok := err.(*pq.Error); ok && pgErr.Code == "23505" {
+			logger.Error().Interface("pgErr", pgErr).Err(err).Msg("error creating customer via google")
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "email has been taken"})
+		} else {
+			// log the error
+			logger.Error().Err(err).Msg("error creating customer via google")
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		}
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"message": "success"})
+}
+
+type GoogleUserInfo struct {
+	Sub string `json:"sub"`
+	Email string `json:"email"`
+	EmailVerified bool `json:"email_verified"`
+	FirstName string `json:"given_name"`
+	LastName string `json:"family_name"`
+	Picture string `json:"picture"`
+	Locale string `json:"locale"`
+}
+
+func getUserInfo(acessToken string) (GoogleUserInfo, error) {
+	var userInfo GoogleUserInfo
+	url := "https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + acessToken
+	req, err := http.NewRequestWithContext(context.Background(), "GET", url, nil)
+	if err != nil {
+		return userInfo, err
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return userInfo, err
+	}
+	defer resp.Body.Close()
+	byteResponse, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return userInfo, err
+	}
+	err = json.Unmarshal(byteResponse, &userInfo)
+	if err != nil {
+		return userInfo, err
+	}
+	return userInfo, nil
 }
