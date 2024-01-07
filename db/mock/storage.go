@@ -370,6 +370,21 @@ func (mr *MockStoreMockRecorder) RecentUsdtNgnRate(arg0, arg1 any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecentUsdtNgnRate", reflect.TypeOf((*MockStore)(nil).RecentUsdtNgnRate), arg0, arg1)
 }
 
+// ResetCustomerPassword mocks base method.
+func (m *MockStore) ResetCustomerPassword(arg0 context.Context, arg1 db.ResetCustomerPasswordParams) (db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResetCustomerPassword", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ResetCustomerPassword indicates an expected call of ResetCustomerPassword.
+func (mr *MockStoreMockRecorder) ResetCustomerPassword(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetCustomerPassword", reflect.TypeOf((*MockStore)(nil).ResetCustomerPassword), arg0, arg1)
+}
+
 // UpdateBtcAddress mocks base method.
 func (m *MockStore) UpdateBtcAddress(arg0 context.Context, arg1 db.UpdateBtcAddressParams) (db.Customerasset, error) {
 	m.ctrl.T.Helper()

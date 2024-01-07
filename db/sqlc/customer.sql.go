@@ -174,6 +174,40 @@ func (q *Queries) GetCustomerByPhoneNumber(ctx context.Context, phone sql.NullSt
 	return i, err
 }
 
+const resetCustomerPassword = `-- name: ResetCustomerPassword :one
+UPDATE customer
+SET password = $2
+WHERE email = $1
+RETURNING id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at, google_id
+`
+
+type ResetCustomerPasswordParams struct {
+	Email    string         `json:"email"`
+	Password sql.NullString `json:"password"`
+}
+
+func (q *Queries) ResetCustomerPassword(ctx context.Context, arg ResetCustomerPasswordParams) (Customer, error) {
+	row := q.db.QueryRowContext(ctx, resetCustomerPassword, arg.Email, arg.Password)
+	var i Customer
+	err := row.Scan(
+		&i.ID,
+		&i.LastLogin,
+		&i.Photo,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.Password,
+		&i.Phone,
+		&i.IsActive,
+		&i.IsStaff,
+		&i.IsSupercustomer,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.GoogleID,
+	)
+	return i, err
+}
+
 const updateCustomerPassword = `-- name: UpdateCustomerPassword :one
 UPDATE customer
 SET password = $2

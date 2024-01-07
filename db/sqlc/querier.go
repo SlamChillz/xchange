@@ -32,6 +32,7 @@ type Querier interface {
 	InsertNewUsdtTronAddress(ctx context.Context, arg InsertNewUsdtTronAddressParams) (Customerasset, error)
 	ListAllCoinSwapTransactions(ctx context.Context, arg ListAllCoinSwapTransactionsParams) ([]Coinswap, error)
 	RecentUsdtNgnRate(ctx context.Context, usdtNgnRate string) (Usdtngnrate, error)
+	ResetCustomerPassword(ctx context.Context, arg ResetCustomerPasswordParams) (Customer, error)
 	UpdateBtcAddress(ctx context.Context, arg UpdateBtcAddressParams) (Customerasset, error)
 	UpdateCustomerPassword(ctx context.Context, arg UpdateCustomerPasswordParams) (Customer, error)
 	UpdateSwapWithBitpowrInfo(ctx context.Context, arg UpdateSwapWithBitpowrInfoParams) (Coinswap, error)

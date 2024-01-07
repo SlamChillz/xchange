@@ -38,12 +38,18 @@ func genrateFieldErrorMessage(field string) (string, string) {
 		return "bank_acc_number", "Invalid bank account number"
 	case "BankCode":
 		return "bank_code", "Invalid bank code"
+	case "Password":
+		return "password", "password must be at least 8 characters"
+	case "ConfirmPassword":
+		return "confirm_password", "password does not match confirm password"
 	case "OldPassword":
 		return "old_password", "incorrect old password"
 	case "NewPassword":
 		return "new_password", "new password must differ from old password and must be at least 8 characters"
 	case "ConfirmNewPassword":
 		return "confirm_new_password", "new password does not match confirm new password"
+	case "OTP":
+		return "otp", "invalid otp token"
 	}
 	return "", ""
 }
