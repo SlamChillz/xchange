@@ -1,12 +1,13 @@
 package worker
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"html/template"
 
 	"github.com/hibiken/asynq"
-	db "github.com/slamchillz/xchange/db/sqlc"
 )
 
 const (
@@ -14,7 +15,8 @@ const (
 )
 
 type PayloadVerificationEmail struct {
-	Customer *db.Customer `json:"customer"`
+	Email string `json:"email"`
+	FirstName string `json:"first_name"`
 	Otp string `json:"otp"`
 }
 
@@ -47,12 +49,23 @@ func (processor *AsynqTaskProcessor) ProcessTaskVerificationEmail(ctx context.Co
 	if err != nil {
 		return fmt.Errorf("failed to json unmarshal verification email task payload: %w", err)
 	}
+	fmt.Printf("%+v\n", payload)
+	msgBuffer := &bytes.Buffer{}
 	// add logic to send verification email to a new customer
-	fmt.Printf("Your OTP is %s\n", payload.Otp)
+	mailTemplate, err := template.ParseFiles("templates/verification_email.html")
+	if err != nil {
+		return fmt.Errorf("failed to parse verification email template: %w", err)
+	}
+	err = mailTemplate.Execute(msgBuffer, payload)
+	if err != nil {
+		return fmt.Errorf("failed to execute verification mail template: %w", err)
+	}
+	fmt.Printf("%s", msgBuffer.Bytes())
+	// fmt.Printf("Your OTP is %s\n", payload.Otp)
 	logger.Info().
 		Str("type", task.Type()).
 		Bytes("payload", task.Payload()).
-		Str("customer_email", payload.Customer.Email).
+		Str("customer_email", payload.Email).
 		Msgf("processed verification email task")
 	return nil
 }

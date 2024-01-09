@@ -125,7 +125,8 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 	server.taskDistributor.DistributeTaskVerificationEmail(
 		context.Background(),
 		worker.PayloadVerificationEmail{
-			Customer: &customer,
+			Email: customer.Email,
+			FirstName: customer.FirstName,
 			Otp: otp,
 		},
 		nil,

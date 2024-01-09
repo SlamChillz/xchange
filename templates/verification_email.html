@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Sign Up Verification</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Inter", sans-serif; 
+        color: black;
+      } 
+
+      .blue-card {
+        height: 90px;
+        background-color: #303179;
+        padding: 20px 20px;
+        margin: 0;
+        align-items: top;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 18px;
+      }
+
+      .email-heading {
+        text-align: center;
+      }
+
+      .email-card {
+        background-color: #ffffff;
+        margin-left: auto;
+        margin-right: auto;
+        border-radius: 10px;
+        box-shadow: 0px 12px 24px rgba(0, 0, 0, 0.2); /* Increased shadow */
+        padding: 40px;
+        margin: -25px 40px 0px 40px; 
+      }
+
+      .email-body {
+        color: #384860;
+        font-size: 16px;
+      }
+
+      .support-text {
+        color: #384860;
+        font-size: 14px;
+        padding: 10px 40px;
+        text-align: center;
+      }
+
+      .support-email {
+        color: #1570ef;
+        text-decoration: none;
+      }
+
+      .social-logos {
+        display: flex;
+        /* margin-left: auto; */
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+      }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+  </head>
+  <body>
+    <div  style=" display: flex; height: 70px; align-items: center; justify-content: space-between; padding-left: 24px; padding-right: 24px; background-color: white; " >
+      <div style="width: fit-content;" >
+        <img
+          src="https://res.cloudinary.com/drdxbvrpm/image/upload/v1688770419/EzyswapLogo_l4wkdn.png"
+          alt="Company Logo" 
+          style="width: 149px;"
+        />
+      </div>
+    </div>
+    <div class="blue-card">
+      <h2 class="email-heading">Sign Up Verification</h2>
+    </div>
+    <div class="email-card">
+      <p class="email-body"><span style="font-weight: bold;">Hi {{ .FirstName }} 👋</span></p>
+      <p class="email-body">Thank you for signing up! Use the one-time password (OTP) below to complete your registration.</p>
+      <div class="otp-box">
+        <h3 class="otp">{{ .Otp }}</h3>
+      </div>
+      <p class="otp-warning">Please note this code is only valid for 5 minutes <br> </p>
+      <p class="email-body">If you did not sign up for an account, please disregard this email.</p>
+    </div>
+    <p class="support-text">For any further assistance or inquiries, please don't hesitate to contact our dedicated support team. We are always ready to help. <a href="mailto:support@ezyswap.co" class="support-email">support@ezyswap.co</a></p><br />
+    <div class="social-logos">
+      <a href="https://twitter.com/ezyswap_"
+        ><img
+          style="width: 16px; margin-left: 16px;"
+          src="https://cdn2.iconfinder.com/data/icons/social-media-2285/512/1_Twitter_colored_svg-512.png"
+          alt="Twitter Logo"
+      /></a>
+      <a href="https://linkedin.com/"
+        ><img
+          style="width: 16px; margin-left: 16px;"
+          src="https://cdn2.iconfinder.com/data/icons/social-media-2285/512/1_Linkedin_unofficial_colored_svg-512.png"
+          alt="LinkedIn Logo"
+      /></a>
+      <a
+        href=" https://instagram.com/ezyswap?igshid=MzRlODBiNWFlZA== 
+      "
+        ><img
+          style="width: 16px; margin-left: 16px;"
+          src="https://cdn2.iconfinder.com/data/icons/social-media-2285/512/1_Instagram_colored_svg_1-512.png"
+          alt="Instagram Logo"
+      /></a>
+    </div>
+  </body>
+</html>
