@@ -14,7 +14,7 @@ import (
 func newTestServer(t *testing.T, store db.Store, redisClient redisdb.RedisClient) *Server {
 	config, err := utils.LoadConfig("../")
 	require.NoError(t, err)
-	server, err := NewServer(config, store, redisClient)
+	server, err := NewServer(config, store, redisClient, nil)
 	require.NoError(t, err)
 	return server
 }

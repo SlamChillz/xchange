@@ -14,6 +14,7 @@ import (
 	"github.com/lib/pq"
 	db "github.com/slamchillz/xchange/db/sqlc"
 	"github.com/slamchillz/xchange/utils"
+	"github.com/slamchillz/xchange/worker"
 )
 
 type CreateCustomerRequest struct {
@@ -39,6 +40,13 @@ type CustomerResponse struct {
 }
 
 func (server *Server) CreateCustomer(ctx *gin.Context) {
+	defer func() {
+		panicValue := recover()
+		if panicValue != nil {
+			logger.Error().Interface("panic", panicValue).Msg("panic occurred")
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		}		
+	}()
 	var err error
 	var req CreateCustomerRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -114,6 +122,14 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 	}
 	resp := CreateCustomerResponse(customer)
 	// TODO: Send verification email to customer
+	server.taskDistributor.DistributeTaskVerificationEmail(
+		context.Background(),
+		worker.PayloadVerificationEmail{
+			Customer: &customer,
+			Otp: otp,
+		},
+		nil,
+	)
 	ctx.JSON(http.StatusOK, resp)
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/slamchillz/xchange/token"
 	"github.com/slamchillz/xchange/utils"
 	"github.com/slamchillz/xchange/redisdb"
+	"github.com/slamchillz/xchange/worker"
 )
 
 type Server struct {
@@ -16,12 +17,14 @@ type Server struct {
 	router *gin.Engine
 	storage db.Store
 	redisClient redisdb.RedisClient
+	taskDistributor worker.TaskDistributor
 }
 
 func NewServer(
 	config utils.Config,
 	storage db.Store,
 	redisClient redisdb.RedisClient,
+	taskDistributor worker.TaskDistributor,
 ) (*Server, error) {
 	jwt, err := token.NewJWT(config.JWT_SECRET)
 	if err != nil {
@@ -32,6 +35,7 @@ func NewServer(
 		token: jwt,
 		storage: storage,
 		redisClient: redisClient,
+		taskDistributor: taskDistributor,
 	}
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("phonenumber", validatePhoneNumber)

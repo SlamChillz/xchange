@@ -5,20 +5,24 @@ import (
 	"database/sql"
 	"net"
 	"net/http"
+
 	// "os"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/hibiken/asynq"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 	"github.com/slamchillz/xchange/api"
 	db "github.com/slamchillz/xchange/db/sqlc"
 	"github.com/slamchillz/xchange/gapi"
 	"github.com/slamchillz/xchange/pb"
-	"github.com/slamchillz/xchange/utils"
 	"github.com/slamchillz/xchange/redisdb"
+	"github.com/slamchillz/xchange/utils"
+	"github.com/slamchillz/xchange/worker"
+
 	// "github.com/rs/zerolog"
 	// "github.com/rs/zerolog/logger"
 	log "github.com/slamchillz/xchange/logger"
@@ -48,16 +52,28 @@ func main() {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("cannot run database migration")
 	}
-	store := db.NewStorage(conn)
+	dbStore := db.NewStorage(conn)
 	rdConn := redis.NewClient(&redis.Options{
 		Addr:	  config.RedisAddress,
 		Password: config.RedisPassword, // no password set
 		DB:		  config.RedisDB,  // use default DB
 	})
 	redisClient := redisdb.NewRedisClient(rdConn)
-	// go runGRPCServer(config, store)
+	// go runGRPCServer(config, dbStore)
 	// runGatewayServer(config)
-	runHTTPServer(config, store, redisClient)
+	asynqRedisClientOption := asynq.RedisClientOpt{
+		Addr: config.RedisAddress,
+		Password: config.RedisPassword,
+		DB: config.RedisDB,
+	}
+	taskDistributor := worker.NewAsynqTaskDistributor(asynqRedisClientOption)
+	go runAsynqTaskProcessorServer(
+		config, 
+		asynqRedisClientOption,
+		dbStore,
+		redisClient,
+	)
+	runHTTPServer(config, dbStore, redisClient, taskDistributor)
 }
 
 func runDatabaseMigration(migrationURL, databaseURL string) error {
@@ -71,6 +87,24 @@ func runDatabaseMigration(migrationURL, databaseURL string) error {
 	}
 	logger.Info().Msg("database migration successful")
 	return nil
+}
+
+func runAsynqTaskProcessorServer(
+	config utils.Config,
+	asynqRedisClientOption asynq.RedisClientOpt,
+	db db.Store,
+	redisClient redisdb.RedisClient,
+) {
+	logger.Info().Msg("starting asynq task processor server")
+	asynqTaskProcessor := worker.NewAsynqTaskProcessor(
+		asynqRedisClientOption,
+		db,
+		redisClient,
+	)
+	err := asynqTaskProcessor.Start()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("cannot start asynq task processor server")
+	}
 }
 
 func runGRPCServer(config utils.Config, store db.Store) {
@@ -93,8 +127,13 @@ func runGRPCServer(config utils.Config, store db.Store) {
 	}
 }
 
-func runHTTPServer(config utils.Config, store db.Store, redisClient redisdb.RedisClient) {
-	server, err := api.NewServer(config, store, redisClient)
+func runHTTPServer(
+	config utils.Config,
+	store db.Store,
+	redisClient redisdb.RedisClient,
+	taskDistributor worker.TaskDistributor,
+) {
+	server, err := api.NewServer(config, store, redisClient, taskDistributor)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("cannot create HTTP server")
 	}
