@@ -10,11 +10,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/go-playground/validator/v10"
 	"github.com/lib/pq"
 	db "github.com/slamchillz/xchange/db/sqlc"
 	"github.com/slamchillz/xchange/utils"
 	"github.com/slamchillz/xchange/worker"
+	"github.com/slamchillz/xchange/notification/mail"
 )
 
 type CreateCustomerRequest struct {
@@ -115,22 +117,37 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 		return
 	}
 	otp := utils.OTP.GenerateOTP()
-	_, err = server.redisClient.Set(ctx, otp, customer.Email, 5 * time.Minute)
+	_, err = server.redisClient.Set(ctx, "signup-"+otp, customer.Email, 5 * time.Minute)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 	resp := CreateCustomerResponse(customer)
 	// TODO: Send verification email to customer
-	server.taskDistributor.DistributeTaskVerificationEmail(
+	err = server.taskDistributor.DistributeTaskSendMail(
 		context.Background(),
-		worker.PayloadVerificationEmail{
-			Email: customer.Email,
-			FirstName: customer.FirstName,
-			Otp: otp,
+		worker.PayloadSendMail{
+			MailReciever: customer.Email,
+			Template: mail.TemplateVerificationEmail,
+			TemplateData: mail.TemplateDataVerificationEmail{
+				Email: customer.Email,
+				FirstName: customer.FirstName,
+				Otp: otp,
+			},
+			MailType: mail.MailTypeVerificationEmail,
+			TaskOptions: nil,
 		},
-		nil,
 	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "try again",
+			"error": "internal server error",
+		})
+		logger.Error().Err(err).
+			Int32("customer-id", customer.ID).
+			Msg("failed to send welcome email after signup verification")
+		return
+	}
 	ctx.JSON(http.StatusOK, resp)
 }
 
@@ -147,6 +164,114 @@ func CreateCustomerResponse(customer db.Customer) CustomerResponse {
 		CreatedAt: customer.CreatedAt,
 		UpdatedAt: customer.UpdatedAt,
 	}
+}
+
+
+type EmailSignupVerificationRequest struct {
+	OTP string `json:"otp" binding:"required,number"`
+}
+
+func (server *Server) EmailSignupVerification(ctx *gin.Context) {
+	var email string
+	var req EmailSignupVerificationRequest
+	err := ctx.ShouldBindJSON(&req);
+	reqErr := CreateSwapError{}
+	var ve validator.ValidationErrors
+	if err != nil {
+		if errors.As(err, &ve) {
+			for _, e := range ve {
+				field := e.Field()
+				key, value := genrateFieldErrorMessage(field)
+				if key != "" {
+					reqErr[key] = value
+				}
+			}
+		} else {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid json request body"})
+			return
+		}
+	}
+	if len(reqErr) > 0 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": reqErr})
+		return
+	}
+	err = server.redisClient.ScanDel(ctx, "signup-"+req.OTP, &email)
+	if err != nil {
+		if err == redis.Nil {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "otp has expired or is invalid"})
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+			logger.Error().Err(err).
+				Str("otp", req.OTP).
+				Msg("failed to retrieve otp from redis db store")
+		}
+		return
+	}
+	customer, err := server.storage.GetCustomerByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			// If this ever happens the engineer should be notified immediately
+			// because it means that an otp has been generated for an unregistered email
+			// or the customer was deleted from the db after the otp was generated
+			// or the user was never stored in the db on signup
+			ctx.JSON(http.StatusForbidden, gin.H{"error": "unregistered email"})
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"message": "try again",
+				"error": "internal server error",
+			})
+			logger.Error().Err(err).
+				Str("email", email).
+				Msg("failed to retrieve customer from db store")
+		}
+		return
+	}
+	_, err = server.storage.UpdateCustomerActiveStatus(ctx, db.UpdateCustomerActiveStatusParams{
+		IsActive: true,
+		ID: customer.ID,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "try again",
+			"error": "internal server error",
+		})
+		logger.Error().Err(err).
+			Int32("customer-id", customer.ID).
+			Msg("failed to activate customer account after signup verification")
+		return
+	}
+	err = server.taskDistributor.DistributeTaskSendMail(
+		context.Background(),
+		worker.PayloadSendMail{
+			MailReciever: customer.Email,
+			Template: mail.TemplateWelcomeEmail,
+			TemplateData: mail.TemplateDataWelcomeEmail{
+				Email: customer.Email,
+				FirstName: customer.FirstName,
+			},
+			MailType: mail.MailTypeWelcomeEmail,
+			TaskOptions: nil,
+		},
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "try again",
+			"error": "internal server error",
+		})
+		logger.Error().Err(err).
+			Int32("customer-id", customer.ID).
+			Msg("failed to send welcome email after signup verification")
+		return
+	}
+	// err = server.taskDistributor.DistributeTaskWelcomeEmail(
+	// 	context.Background(),
+	// 	worker.PayloadWelcomeEmail{
+	// 		Email: customer.Email,
+	// 		FirstName: customer.FirstName,
+	// 	},
+	// 	nil,
+	// )
+	ctx.JSON(http.StatusOK, gin.H{})
 }
 
 

@@ -400,6 +400,21 @@ func (mr *MockStoreMockRecorder) UpdateBtcAddress(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBtcAddress", reflect.TypeOf((*MockStore)(nil).UpdateBtcAddress), arg0, arg1)
 }
 
+// UpdateCustomerActiveStatus mocks base method.
+func (m *MockStore) UpdateCustomerActiveStatus(arg0 context.Context, arg1 db.UpdateCustomerActiveStatusParams) (db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateCustomerActiveStatus", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateCustomerActiveStatus indicates an expected call of UpdateCustomerActiveStatus.
+func (mr *MockStoreMockRecorder) UpdateCustomerActiveStatus(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCustomerActiveStatus", reflect.TypeOf((*MockStore)(nil).UpdateCustomerActiveStatus), arg0, arg1)
+}
+
 // UpdateCustomerPassword mocks base method.
 func (m *MockStore) UpdateCustomerPassword(arg0 context.Context, arg1 db.UpdateCustomerPasswordParams) (db.Customer, error) {
 	m.ctrl.T.Helper()

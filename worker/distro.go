@@ -8,10 +8,9 @@ import (
 
 type TaskDistributor interface {
 	// DistributeTask(ctx context.Context, task Task) error
-	DistributeTaskVerificationEmail(
-		ctx context.Context,
-		payload PayloadVerificationEmail,
-		opts ...asynq.Option,
+	DistributeTaskSendMail(
+		context.Context,
+		PayloadSendMail,
 	) error
 }
 

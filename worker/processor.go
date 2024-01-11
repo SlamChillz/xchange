@@ -17,7 +17,7 @@ var (
 type TaskProcessor interface {
 	// DistributeTask(ctx context.Context, task Task) error
 	Start() error
-	ProcessTaskVerificationEmail(
+	ProcessTaskSendMail(
 		ctx context.Context,
 		task *asynq.Task,
 	) error
@@ -55,6 +55,6 @@ func NewAsynqTaskProcessor(asynqServerOpt asynq.RedisClientOpt, db db.Store, red
 
 func (atp *AsynqTaskProcessor) Start() error {
 	mux := asynq.NewServeMux()
-	mux.HandleFunc(TaskVerificationEmail, atp.ProcessTaskVerificationEmail)
+	mux.HandleFunc(TaskSendMail, atp.ProcessTaskSendMail)
 	return atp.server.Start(mux)
 }

@@ -69,6 +69,49 @@ func (mr *MockRedisClientMockRecorder) Get(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRedisClient)(nil).Get), arg0, arg1)
 }
 
+// GetDel mocks base method.
+func (m *MockRedisClient) GetDel(arg0 context.Context, arg1 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDel", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDel indicates an expected call of GetDel.
+func (mr *MockRedisClientMockRecorder) GetDel(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDel", reflect.TypeOf((*MockRedisClient)(nil).GetDel), arg0, arg1)
+}
+
+// Scan mocks base method.
+func (m *MockRedisClient) Scan(arg0 context.Context, arg1 string, arg2 any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Scan", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Scan indicates an expected call of Scan.
+func (mr *MockRedisClientMockRecorder) Scan(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Scan", reflect.TypeOf((*MockRedisClient)(nil).Scan), arg0, arg1, arg2)
+}
+
+// ScanDel mocks base method.
+func (m *MockRedisClient) ScanDel(arg0 context.Context, arg1 string, arg2 any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScanDel", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScanDel indicates an expected call of ScanDel.
+func (mr *MockRedisClientMockRecorder) ScanDel(arg0, arg1, arg2 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScanDel", reflect.TypeOf((*MockRedisClient)(nil).ScanDel), arg0, arg1, arg2)
+}
+
 // Set mocks base method.
 func (m *MockRedisClient) Set(arg0 context.Context, arg1 string, arg2 any, arg3 time.Duration) (string, error) {
 	m.ctrl.T.Helper()

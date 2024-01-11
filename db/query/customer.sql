@@ -40,3 +40,9 @@ UPDATE customer
 SET password = $2
 WHERE email = $1
 RETURNING *;
+
+-- name: UpdateCustomerActiveStatus :one
+UPDATE customer
+SET is_active  = $1
+WHERE id = $2
+RETURNING *;

@@ -49,7 +49,7 @@ func genrateFieldErrorMessage(field string) (string, string) {
 	case "ConfirmNewPassword":
 		return "confirm_new_password", "new password does not match confirm new password"
 	case "OTP":
-		return "otp", "invalid otp token"
+		return "otp", "otp is missing or invalid otp token"
 	}
 	return "", ""
 }
