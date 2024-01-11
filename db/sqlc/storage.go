@@ -1,12 +1,17 @@
 package db
 
 import (
+	"fmt"
 	"context"
 	"database/sql"
 )
 
 type Store interface {
 	Querier
+	CreateCustomerTransaction(
+		context.Context,
+		CreateCustomerTransactionParams,
+	) (Customer, error)
 }
 
 type Storage struct {
@@ -30,9 +35,9 @@ func (storage *Storage) executeTransaction(ctx context.Context, fn func(*Queries
 	err = fn(q)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return rbErr
+			return fmt.Errorf("transaction err: %v, rollback err: %v", err, rbErr)
 		}
-		return err
+		return fmt.Errorf("transaction err: %v", err)
 	}
 	return tx.Commit()
 }

@@ -85,6 +85,21 @@ func (mr *MockStoreMockRecorder) CreateCustomer(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCustomer", reflect.TypeOf((*MockStore)(nil).CreateCustomer), arg0, arg1)
 }
 
+// CreateCustomerTransaction mocks base method.
+func (m *MockStore) CreateCustomerTransaction(arg0 context.Context, arg1 db.CreateCustomerTransactionParams) (db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateCustomerTransaction", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateCustomerTransaction indicates an expected call of CreateCustomerTransaction.
+func (mr *MockStoreMockRecorder) CreateCustomerTransaction(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCustomerTransaction", reflect.TypeOf((*MockStore)(nil).CreateCustomerTransaction), arg0, arg1)
+}
+
 // CreateSwap mocks base method.
 func (m *MockStore) CreateSwap(arg0 context.Context, arg1 db.CreateSwapParams) (db.Coinswap, error) {
 	m.ctrl.T.Helper()
