@@ -17,27 +17,8 @@ import (
 	"github.com/slamchillz/xchange/utils"
 	"github.com/slamchillz/xchange/worker"
 	"github.com/slamchillz/xchange/notification/mail"
+	apiTypes "github.com/slamchillz/xchange/types/api"
 )
-
-type CreateCustomerRequest struct {
-	FirstName string `json:"first_name" binding:"required,min=3,max=50,alpha"`
-	LastName string `json:"last_name" binding:"required,min=3,max=50,alpha"`
-	Email string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,gte=8"`
-	ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=Password"`
-}
-
-type CustomerResponse struct {
-	ID 				int32 		   `json:"id"`
-	FirstName 		string 		   `json:"first_name"`
-	LastName 		string 		   `json:"last_name"`
-	Email 			string 		   `json:"email"`
-	IsActive        bool           `json:"is_active"`
-	IsStaff         bool           `json:"is_staff"`
-	IsSupercustomer bool           `json:"is_supercustomer"`
-	CreatedAt       time.Time      `json:"created_at"`
-	UpdatedAt       time.Time      `json:"updated_at"`
-}
 
 func (server *Server) CreateCustomer(ctx *gin.Context) {
 	defer func() {
@@ -48,7 +29,7 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 		}		
 	}()
 	var err error
-	var req CreateCustomerRequest
+	var req apiTypes.CreateCustomerRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -124,8 +105,8 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
-func CreateCustomerResponse(customer db.Customer) CustomerResponse {
-	return CustomerResponse{
+func CreateCustomerResponse(customer db.Customer) apiTypes.CustomerResponse {
+	return apiTypes.CustomerResponse{
 		ID: customer.ID,
 		FirstName: customer.FirstName,
 		LastName: customer.LastName,
@@ -139,13 +120,9 @@ func CreateCustomerResponse(customer db.Customer) CustomerResponse {
 }
 
 
-type EmailSignupVerificationRequest struct {
-	OTP string `json:"otp" binding:"required,number"`
-}
-
 func (server *Server) EmailSignupVerification(ctx *gin.Context) {
 	var email string
-	var req EmailSignupVerificationRequest
+	var req apiTypes.EmailSignupVerificationRequest
 	err := ctx.ShouldBindJSON(&req);
 	reqErr := CreateSwapError{}
 	var ve validator.ValidationErrors
@@ -239,13 +216,8 @@ func (server *Server) EmailSignupVerification(ctx *gin.Context) {
 }
 
 
-type GoogleAuthRequest struct {
-	Token string `json:"token" binding:"required"`
-}
-
-
 func (server *Server) GoogleSignUp(ctx *gin.Context) {
-	var req GoogleAuthRequest
+	var req apiTypes.GoogleAuthRequest
 	var ve validator.ValidationErrors
 	err := ctx.ShouldBindJSON(&req)
 	reqErr := CreateSwapError{}
@@ -307,18 +279,9 @@ func (server *Server) GoogleSignUp(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 }
 
-type GoogleUserInfo struct {
-	Sub string `json:"sub"`
-	Email string `json:"email"`
-	EmailVerified bool `json:"email_verified"`
-	FirstName string `json:"given_name"`
-	LastName string `json:"family_name"`
-	Picture string `json:"picture"`
-	Locale string `json:"locale"`
-}
 
-func getUserInfo(acessToken string) (GoogleUserInfo, error) {
-	var userInfo GoogleUserInfo
+func getUserInfo(acessToken string) (apiTypes.GoogleUserInfo, error) {
+	var userInfo apiTypes.GoogleUserInfo
 	url := "https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + acessToken
 	req, err := http.NewRequestWithContext(context.Background(), "GET", url, nil)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/slamchillz/xchange/utils"
+	apiTypes "github.com/slamchillz/xchange/types/api"
 )
 
 type LoginCustomerRequest struct {
@@ -17,7 +18,7 @@ type LoginCustomerRequest struct {
 
 type LoginCustomerResponse struct {
 	AccessToken string `json:"access_token"`
-	Customer CustomerResponse `json:"user"`
+	Customer apiTypes.CustomerResponse `json:"user"`
 }
 
 func (server *Server) LoginCustomer(ctx *gin.Context) {
@@ -63,7 +64,7 @@ func (server *Server) LoginCustomer(ctx *gin.Context) {
 
 
 func (server *Server) GoogleSignIn(ctx *gin.Context) {
-	var req GoogleAuthRequest
+	var req apiTypes.GoogleAuthRequest
 	var ve validator.ValidationErrors
 	err := ctx.ShouldBindJSON(&req)
 	reqErr := CreateSwapError{}
