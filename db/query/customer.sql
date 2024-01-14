@@ -44,5 +44,5 @@ RETURNING *;
 -- name: UpdateCustomerActiveStatus :one
 UPDATE customer
 SET is_active  = $1
-WHERE id = $2
+WHERE email = $2
 RETURNING *;

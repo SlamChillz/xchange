@@ -10,7 +10,7 @@ type CreateCustomerRequest struct {
 	Email string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,gte=8"`
 	ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=Password"`
-	Verified bool
+	Verified bool `json:"verified"`
 }
 
 type CustomerResponse struct {

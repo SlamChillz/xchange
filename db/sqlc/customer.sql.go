@@ -211,17 +211,17 @@ func (q *Queries) ResetCustomerPassword(ctx context.Context, arg ResetCustomerPa
 const updateCustomerActiveStatus = `-- name: UpdateCustomerActiveStatus :one
 UPDATE customer
 SET is_active  = $1
-WHERE id = $2
+WHERE email = $2
 RETURNING id, last_login, photo, first_name, last_name, email, password, phone, is_active, is_staff, is_supercustomer, created_at, updated_at, google_id
 `
 
 type UpdateCustomerActiveStatusParams struct {
-	IsActive bool  `json:"is_active"`
-	ID       int32 `json:"id"`
+	IsActive bool   `json:"is_active"`
+	Email    string `json:"email"`
 }
 
 func (q *Queries) UpdateCustomerActiveStatus(ctx context.Context, arg UpdateCustomerActiveStatusParams) (Customer, error) {
-	row := q.db.QueryRowContext(ctx, updateCustomerActiveStatus, arg.IsActive, arg.ID)
+	row := q.db.QueryRowContext(ctx, updateCustomerActiveStatus, arg.IsActive, arg.Email)
 	var i Customer
 	err := row.Scan(
 		&i.ID,
