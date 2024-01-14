@@ -12,6 +12,10 @@ type TaskDistributor interface {
 		context.Context,
 		PayloadSendMail,
 	) error
+	DistributeTaskStoreNewCustomer(
+		context.Context,
+		PayloadStoreNewCustomer,
+	) error
 }
 
 type AsynqTaskDistributor struct {

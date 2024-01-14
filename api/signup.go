@@ -26,7 +26,7 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 		if panicValue != nil {
 			logger.Error().Interface("panic", panicValue).Msg("panic occurred")
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
-		}		
+		}
 	}()
 	var err error
 	var req apiTypes.CreateCustomerRequest
@@ -35,11 +35,12 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 		return
 	}
 	// This is an expensive operation, should be done in a goroutine/queue
-	hashedPassword, err := utils.HashPassword(req.Password)
+	// hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
+	req.Verified = false
 	// TODO: Validate phone number and email to avoid pk increment on db error
 	customer, err := server.storage.GetCustomerByEmail(ctx, req.Email)
 	if err != nil {
@@ -53,56 +54,59 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 		ctx.JSON(http.StatusConflict, gin.H{"error": "email has been taken"})
 		return
 	}
-	// Create the customer
-	// Save to redis and send it to a queue
-	customer, err = server.storage.CreateCustomerTransaction(ctx, db.CreateCustomerTransactionParams{
-		CreateCustomerParams: db.CreateCustomerParams{
-			FirstName: req.FirstName,
-			LastName: req.LastName,
-			Email: req.Email,
-			Phone: sql.NullString{
-				String: "",
-				Valid: false,
-			},
-			Password: sql.NullString{
-				String: hashedPassword,
-				Valid: true,
-			},
-		},
-		SendVerificationMail: func(customer *db.Customer) error {
-			otp := utils.OTP.GenerateOTP()
-			_, err := server.redisClient.Set(ctx, "signup-"+otp, customer.Email, 5 * time.Minute)
-			if err != nil {
-				return err
-			}
-			return server.taskDistributor.DistributeTaskSendMail(
-				context.Background(),
-				worker.PayloadSendMail{
-					MailReciever: customer.Email,
-					Template: mail.TemplateVerificationEmail,
-					TemplateData: mail.TemplateDataVerificationEmail{
-						Email: customer.Email,
-						FirstName: customer.FirstName,
-						Otp: otp,
-					},
-					MailType: mail.MailTypeVerificationEmail,
-					TaskOptions: nil,
-				},
-			)
-		},
-	})
+	// otp := utils.OTP.GenerateOTP()
+	jsonReqData, err := json.Marshal(req)
 	if err != nil {
-		if pgErr, ok := err.(*pq.Error); ok && pgErr.Code == "23505"{
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "email or phone number already exists"})
-		} else {
-			// log the error
-			logger.Error().Err(err).Msg("failed to create new customer")
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
-		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		logger.Error().Err(err).Msg("failed to marshal request body")
 		return
 	}
-	resp := CreateCustomerResponse(customer)
-	ctx.JSON(http.StatusOK, resp)
+	_, err = server.redisClient.Set(ctx, "signup:"+req.Email, jsonReqData, 0 * time.Second)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		logger.Error().Err(err).Msg("failed to set otp in redis db store")
+		return
+	}
+	// Create the customer
+	err = server.taskDistributor.DistributeTaskStoreNewCustomer(
+		context.Background(),
+		worker.PayloadStoreNewCustomer{
+			Data: jsonReqData,
+			TaskOptions: nil,
+		},
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		logger.Error().Err(err).Msg("failed to distribute store-new-customer-in-db task")
+		return
+	}
+	otp := utils.OTP.GenerateOTP()
+	_, err = server.redisClient.Set(ctx, "signup-"+otp, req.Email, 5 * time.Minute)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		logger.Error().Err(err).Msg("failed to set otp in redis db store")
+		return
+	}
+	err = server.taskDistributor.DistributeTaskSendMail(
+		context.Background(),
+		worker.PayloadSendMail{
+			MailReciever: req.Email,
+			Template: mail.TemplateVerificationEmail,
+			TemplateData: mail.TemplateDataVerificationEmail{
+				Email: req.Email,
+				FirstName: req.FirstName,
+				Otp: otp,
+			},
+			MailType: mail.MailTypeVerificationEmail,
+			TaskOptions: nil,
+		},
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		logger.Error().Err(err).Msg("failed to distribute send-mail task for new customer verification")
+		return
+	}
+	ctx.JSON(http.StatusCreated, gin.H{})
 }
 
 func CreateCustomerResponse(customer db.Customer) apiTypes.CustomerResponse {

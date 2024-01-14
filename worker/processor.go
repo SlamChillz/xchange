@@ -21,6 +21,10 @@ type TaskProcessor interface {
 		ctx context.Context,
 		task *asynq.Task,
 	) error
+	ProcessTaskStoreNewCustomer(
+		ctx context.Context,
+		task *asynq.Task,
+	) error
 }
 
 type AsynqTaskProcessor struct {
@@ -56,5 +60,6 @@ func NewAsynqTaskProcessor(asynqServerOpt asynq.RedisClientOpt, db db.Store, red
 func (atp *AsynqTaskProcessor) Start() error {
 	mux := asynq.NewServeMux()
 	mux.HandleFunc(TaskSendMail, atp.ProcessTaskSendMail)
+	mux.HandleFunc(TaskStoreNewCustomer, atp.ProcessTaskStoreNewCustomer)
 	return atp.server.Start(mux)
 }
