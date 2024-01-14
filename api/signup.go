@@ -81,7 +81,7 @@ func (server *Server) CreateCustomer(ctx *gin.Context) {
 		return
 	}
 	otp := utils.OTP.GenerateOTP()
-	_, err = server.redisClient.Set(ctx, "signup-"+otp, req.Email, 5 * time.Minute)
+	_, err = server.redisClient.Set(ctx, "signup:"+otp, req.Email, 5 * time.Minute)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		logger.Error().Err(err).Msg("failed to set otp in redis db store")
@@ -148,7 +148,7 @@ func (server *Server) EmailSignupVerification(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": reqErr})
 		return
 	}
-	err = server.redisClient.ScanDel(ctx, "signup-"+req.OTP, &email)
+	err = server.redisClient.ScanDel(ctx, "signup:"+req.OTP, &email)
 	if err != nil {
 		if err == redis.Nil {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "otp has expired or is invalid"})
