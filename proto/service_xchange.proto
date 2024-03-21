@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/api/annotations.proto";
+import "rpc_create_customer.proto";
+import "rpc_login_customer.proto";
+import "rpc_create_swap.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/slamchillz/xchange/pb";
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Xchange API";
+    version: "1.0";
+    contact: {
+      name: "Mendy Slam";
+      url: "https://github.com/slamchillz/xchange";
+      email: "mendyslam@gmail.com";
+    };
+  };
+};
+
+service Xchange {
+  rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse) {
+    option (google.api.http) = {
+      post: "/v1/users/signup"
+      body: "*"
+    };
+  }
+  rpc LoginCustomer(LoginCustomerRequest) returns (LoginCustomerResponse) {
+    option (google.api.http) = {
+      post: "/v1/users/login"
+      body: "*"
+    };
+  }
+  rpc CreateSwap(CoinSwapRequest) returns (CoinSwapResponse) {
+    option (google.api.http) = {
+      post: "/v1/swap"
+      body: "*"
+    };
+  }
+}

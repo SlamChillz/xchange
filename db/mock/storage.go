@@ -40,6 +40,21 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 	return m.recorder
 }
 
+// CoinSwapUpdateUserPaid mocks base method.
+func (m *MockStore) CoinSwapUpdateUserPaid(arg0 context.Context, arg1 db.CoinSwapUpdateUserPaidParams) (db.Coinswap, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CoinSwapUpdateUserPaid", arg0, arg1)
+	ret0, _ := ret[0].(db.Coinswap)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CoinSwapUpdateUserPaid indicates an expected call of CoinSwapUpdateUserPaid.
+func (mr *MockStoreMockRecorder) CoinSwapUpdateUserPaid(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CoinSwapUpdateUserPaid", reflect.TypeOf((*MockStore)(nil).CoinSwapUpdateUserPaid), arg0, arg1)
+}
+
 // CreateAdmindata mocks base method.
 func (m *MockStore) CreateAdmindata(arg0 context.Context, arg1 db.CreateAdmindataParams) (db.Admindatum, error) {
 	m.ctrl.T.Helper()
@@ -70,11 +85,26 @@ func (mr *MockStoreMockRecorder) CreateCustomer(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCustomer", reflect.TypeOf((*MockStore)(nil).CreateCustomer), arg0, arg1)
 }
 
+// CreateCustomerTransaction mocks base method.
+func (m *MockStore) CreateCustomerTransaction(arg0 context.Context, arg1 db.CreateCustomerTransactionParams) (db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateCustomerTransaction", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateCustomerTransaction indicates an expected call of CreateCustomerTransaction.
+func (mr *MockStoreMockRecorder) CreateCustomerTransaction(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCustomerTransaction", reflect.TypeOf((*MockStore)(nil).CreateCustomerTransaction), arg0, arg1)
+}
+
 // CreateSwap mocks base method.
-func (m *MockStore) CreateSwap(arg0 context.Context, arg1 db.CreateSwapParams) (db.CreateSwapRow, error) {
+func (m *MockStore) CreateSwap(arg0 context.Context, arg1 db.CreateSwapParams) (db.Coinswap, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSwap", arg0, arg1)
-	ret0, _ := ret[0].(db.CreateSwapRow)
+	ret0, _ := ret[0].(db.Coinswap)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -100,6 +130,21 @@ func (mr *MockStoreMockRecorder) GetBtcAddress(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBtcAddress", reflect.TypeOf((*MockStore)(nil).GetBtcAddress), arg0, arg1)
 }
 
+// GetCustomerBankDetails mocks base method.
+func (m *MockStore) GetCustomerBankDetails(arg0 context.Context, arg1 int32) (db.Bankdetail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCustomerBankDetails", arg0, arg1)
+	ret0, _ := ret[0].(db.Bankdetail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCustomerBankDetails indicates an expected call of GetCustomerBankDetails.
+func (mr *MockStoreMockRecorder) GetCustomerBankDetails(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerBankDetails", reflect.TypeOf((*MockStore)(nil).GetCustomerBankDetails), arg0, arg1)
+}
+
 // GetCustomerByEmail mocks base method.
 func (m *MockStore) GetCustomerByEmail(arg0 context.Context, arg1 string) (db.Customer, error) {
 	m.ctrl.T.Helper()
@@ -113,6 +158,66 @@ func (m *MockStore) GetCustomerByEmail(arg0 context.Context, arg1 string) (db.Cu
 func (mr *MockStoreMockRecorder) GetCustomerByEmail(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerByEmail", reflect.TypeOf((*MockStore)(nil).GetCustomerByEmail), arg0, arg1)
+}
+
+// GetCustomerByGoogleId mocks base method.
+func (m *MockStore) GetCustomerByGoogleId(arg0 context.Context, arg1 sql.NullString) (db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCustomerByGoogleId", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCustomerByGoogleId indicates an expected call of GetCustomerByGoogleId.
+func (mr *MockStoreMockRecorder) GetCustomerByGoogleId(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerByGoogleId", reflect.TypeOf((*MockStore)(nil).GetCustomerByGoogleId), arg0, arg1)
+}
+
+// GetCustomerById mocks base method.
+func (m *MockStore) GetCustomerById(arg0 context.Context, arg1 int32) (db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCustomerById", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCustomerById indicates an expected call of GetCustomerById.
+func (mr *MockStoreMockRecorder) GetCustomerById(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerById", reflect.TypeOf((*MockStore)(nil).GetCustomerById), arg0, arg1)
+}
+
+// GetCustomerByPhoneNumber mocks base method.
+func (m *MockStore) GetCustomerByPhoneNumber(arg0 context.Context, arg1 sql.NullString) (db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCustomerByPhoneNumber", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCustomerByPhoneNumber indicates an expected call of GetCustomerByPhoneNumber.
+func (mr *MockStoreMockRecorder) GetCustomerByPhoneNumber(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerByPhoneNumber", reflect.TypeOf((*MockStore)(nil).GetCustomerByPhoneNumber), arg0, arg1)
+}
+
+// GetOneCoinSwapTransaction mocks base method.
+func (m *MockStore) GetOneCoinSwapTransaction(arg0 context.Context, arg1 string) (db.Coinswap, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOneCoinSwapTransaction", arg0, arg1)
+	ret0, _ := ret[0].(db.Coinswap)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOneCoinSwapTransaction indicates an expected call of GetOneCoinSwapTransaction.
+func (mr *MockStoreMockRecorder) GetOneCoinSwapTransaction(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOneCoinSwapTransaction", reflect.TypeOf((*MockStore)(nil).GetOneCoinSwapTransaction), arg0, arg1)
 }
 
 // GetPendingNetworkTransaction mocks base method.
@@ -175,6 +280,21 @@ func (mr *MockStoreMockRecorder) GetUsdtTronAddress(arg0, arg1 any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsdtTronAddress", reflect.TypeOf((*MockStore)(nil).GetUsdtTronAddress), arg0, arg1)
 }
 
+// InsertCustomerBankDetails mocks base method.
+func (m *MockStore) InsertCustomerBankDetails(arg0 context.Context, arg1 db.InsertCustomerBankDetailsParams) ([]db.Bankdetail, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertCustomerBankDetails", arg0, arg1)
+	ret0, _ := ret[0].([]db.Bankdetail)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InsertCustomerBankDetails indicates an expected call of InsertCustomerBankDetails.
+func (mr *MockStoreMockRecorder) InsertCustomerBankDetails(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertCustomerBankDetails", reflect.TypeOf((*MockStore)(nil).InsertCustomerBankDetails), arg0, arg1)
+}
+
 // InsertNewBtcAddress mocks base method.
 func (m *MockStore) InsertNewBtcAddress(arg0 context.Context, arg1 db.InsertNewBtcAddressParams) (db.Customerasset, error) {
 	m.ctrl.T.Helper()
@@ -235,6 +355,21 @@ func (mr *MockStoreMockRecorder) InsertNewUsdtTronAddress(arg0, arg1 any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertNewUsdtTronAddress", reflect.TypeOf((*MockStore)(nil).InsertNewUsdtTronAddress), arg0, arg1)
 }
 
+// ListAllCoinSwapTransactions mocks base method.
+func (m *MockStore) ListAllCoinSwapTransactions(arg0 context.Context, arg1 db.ListAllCoinSwapTransactionsParams) ([]db.Coinswap, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAllCoinSwapTransactions", arg0, arg1)
+	ret0, _ := ret[0].([]db.Coinswap)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAllCoinSwapTransactions indicates an expected call of ListAllCoinSwapTransactions.
+func (mr *MockStoreMockRecorder) ListAllCoinSwapTransactions(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllCoinSwapTransactions", reflect.TypeOf((*MockStore)(nil).ListAllCoinSwapTransactions), arg0, arg1)
+}
+
 // RecentUsdtNgnRate mocks base method.
 func (m *MockStore) RecentUsdtNgnRate(arg0 context.Context, arg1 string) (db.Usdtngnrate, error) {
 	m.ctrl.T.Helper()
@@ -248,6 +383,21 @@ func (m *MockStore) RecentUsdtNgnRate(arg0 context.Context, arg1 string) (db.Usd
 func (mr *MockStoreMockRecorder) RecentUsdtNgnRate(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecentUsdtNgnRate", reflect.TypeOf((*MockStore)(nil).RecentUsdtNgnRate), arg0, arg1)
+}
+
+// ResetCustomerPassword mocks base method.
+func (m *MockStore) ResetCustomerPassword(arg0 context.Context, arg1 db.ResetCustomerPasswordParams) (db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResetCustomerPassword", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ResetCustomerPassword indicates an expected call of ResetCustomerPassword.
+func (mr *MockStoreMockRecorder) ResetCustomerPassword(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResetCustomerPassword", reflect.TypeOf((*MockStore)(nil).ResetCustomerPassword), arg0, arg1)
 }
 
 // UpdateBtcAddress mocks base method.
@@ -265,19 +415,64 @@ func (mr *MockStoreMockRecorder) UpdateBtcAddress(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBtcAddress", reflect.TypeOf((*MockStore)(nil).UpdateBtcAddress), arg0, arg1)
 }
 
-// UpdateSwap mocks base method.
-func (m *MockStore) UpdateSwap(arg0 context.Context, arg1 db.UpdateSwapParams) (db.Coinswap, error) {
+// UpdateCustomerActiveStatus mocks base method.
+func (m *MockStore) UpdateCustomerActiveStatus(arg0 context.Context, arg1 db.UpdateCustomerActiveStatusParams) (db.Customer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateSwap", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateCustomerActiveStatus", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateCustomerActiveStatus indicates an expected call of UpdateCustomerActiveStatus.
+func (mr *MockStoreMockRecorder) UpdateCustomerActiveStatus(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCustomerActiveStatus", reflect.TypeOf((*MockStore)(nil).UpdateCustomerActiveStatus), arg0, arg1)
+}
+
+// UpdateCustomerPassword mocks base method.
+func (m *MockStore) UpdateCustomerPassword(arg0 context.Context, arg1 db.UpdateCustomerPasswordParams) (db.Customer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateCustomerPassword", arg0, arg1)
+	ret0, _ := ret[0].(db.Customer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateCustomerPassword indicates an expected call of UpdateCustomerPassword.
+func (mr *MockStoreMockRecorder) UpdateCustomerPassword(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCustomerPassword", reflect.TypeOf((*MockStore)(nil).UpdateCustomerPassword), arg0, arg1)
+}
+
+// UpdateSwapWithBitpowrInfo mocks base method.
+func (m *MockStore) UpdateSwapWithBitpowrInfo(arg0 context.Context, arg1 db.UpdateSwapWithBitpowrInfoParams) (db.Coinswap, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSwapWithBitpowrInfo", arg0, arg1)
 	ret0, _ := ret[0].(db.Coinswap)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// UpdateSwap indicates an expected call of UpdateSwap.
-func (mr *MockStoreMockRecorder) UpdateSwap(arg0, arg1 any) *gomock.Call {
+// UpdateSwapWithBitpowrInfo indicates an expected call of UpdateSwapWithBitpowrInfo.
+func (mr *MockStoreMockRecorder) UpdateSwapWithBitpowrInfo(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSwap", reflect.TypeOf((*MockStore)(nil).UpdateSwap), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSwapWithBitpowrInfo", reflect.TypeOf((*MockStore)(nil).UpdateSwapWithBitpowrInfo), arg0, arg1)
+}
+
+// UpdateSwapWithShutterInfo mocks base method.
+func (m *MockStore) UpdateSwapWithShutterInfo(arg0 context.Context, arg1 db.UpdateSwapWithShutterInfoParams) (db.Coinswap, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateSwapWithShutterInfo", arg0, arg1)
+	ret0, _ := ret[0].(db.Coinswap)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateSwapWithShutterInfo indicates an expected call of UpdateSwapWithShutterInfo.
+func (mr *MockStoreMockRecorder) UpdateSwapWithShutterInfo(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSwapWithShutterInfo", reflect.TypeOf((*MockStore)(nil).UpdateSwapWithShutterInfo), arg0, arg1)
 }
 
 // UpdateUsdtAddress mocks base method.

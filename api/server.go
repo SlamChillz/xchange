@@ -7,6 +7,8 @@ import (
 	"github.com/slamchillz/xchange/db/sqlc"
 	"github.com/slamchillz/xchange/token"
 	"github.com/slamchillz/xchange/utils"
+	"github.com/slamchillz/xchange/redisdb"
+	"github.com/slamchillz/xchange/worker"
 )
 
 type Server struct {
@@ -14,9 +16,16 @@ type Server struct {
 	token *token.JWT
 	router *gin.Engine
 	storage db.Store
+	redisClient redisdb.RedisClient
+	taskDistributor worker.TaskDistributor
 }
 
-func NewServer(config utils.Config, storage db.Store) (*Server, error) {
+func NewServer(
+	config utils.Config,
+	storage db.Store,
+	redisClient redisdb.RedisClient,
+	taskDistributor worker.TaskDistributor,
+) (*Server, error) {
 	jwt, err := token.NewJWT(config.JWT_SECRET)
 	if err != nil {
 		return nil, err
@@ -25,9 +34,14 @@ func NewServer(config utils.Config, storage db.Store) (*Server, error) {
 		config: config,
 		token: jwt,
 		storage: storage,
+		redisClient: redisClient,
+		taskDistributor: taskDistributor,
 	}
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("phonenumber", validatePhoneNumber)
+		v.RegisterValidation("coinname", validateCoinName)
+		v.RegisterValidation("network", validateNetwork)
+		v.RegisterValidation("oldpassword", validateOldPassword)
 	}
 	server.ConfigRouter()
 	return server, nil
@@ -35,12 +49,28 @@ func NewServer(config utils.Config, storage db.Store) (*Server, error) {
 
 func (server *Server) ConfigRouter() {
 	router := gin.Default()
-	router.POST("/api/v1/users/signup", server.CreateCustomer)
-	router.POST("/api/v1/users/login", server.LoginCustomer)
 
-	authEndpoints := router.Use(server.Authenticate)
+	apiRouter := router.Group("/api/v1")
 
-	authEndpoints.POST("/api/v1/swap", server.CoinSwap)
+	logApiRouter := apiRouter.Use(server.HTTPLogger)
+	logApiRouter.POST("/user/signup", server.CreateCustomer)
+	logApiRouter.POST("/user/signup/verify", server.EmailSignupVerification)
+	logApiRouter.POST("/user/login", server.LoginCustomer)
+	logApiRouter.POST("/user/google/signup", server.GoogleSignUp)
+	logApiRouter.POST("/user/google/signin", server.GoogleSignIn)
+	logApiRouter.POST("/user/password/reset", server.PasswordReset)
+	logApiRouter.POST("/user/password/reset/request", server.PasswordResetRequest)
+	// logApiRouter.POST("/user/profile/photo", server.CustomerProfilePicture)
+
+	authEndpoints := logApiRouter.Use(server.Authenticate)
+	authEndpoints.POST("/token/swap", server.CoinSwap)
+	authEndpoints.PATCH("/token/swap/:ref", server.CoinSwapStatusUpdate)
+	authEndpoints.GET("/token/swap/history", server.ListCoinSwapHistory)
+	authEndpoints.POST("/token/rate/calculate/ngn", server.GetCoinNGNEquivalent)
+	authEndpoints.GET("/user/bank/details", server.GetBankDetails)
+	authEndpoints.POST("/user/bank/details", server.AddBankDetails)
+	authEndpoints.PATCH("/user/password/change", server.ChangePassword)
+
 	server.router = router
 }
 

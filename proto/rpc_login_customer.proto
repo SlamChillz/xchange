@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package pb;
+
+import "customer.proto";
+
+option go_package = "github.com/slamchillz/xchange/pb";
+
+message LoginCustomerRequest {
+     string email = 1;
+     string password = 2;
+}
+
+message LoginCustomerResponse {
+    string access_token = 1;
+    Customer customer = 2;
+}

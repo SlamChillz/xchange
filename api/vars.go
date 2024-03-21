@@ -1,28 +1,42 @@
 package api
 
 import (
-	"log"
-	"os"
+	"errors"
+
+	log "github.com/slamchillz/xchange/logger"
 )
 
-var BTCDATA = []map[string]string{
-	{"coin_name": "btc", "coin_id": "bitcoin", "coin_symbol": "BTC"},
-}
+const BTCUSDT = 34403.000000
 
-var STABLECOINSLIST = []string{"USDT", "USDT_TRON", "USDT_BSC"}
+var (
+	logger = log.GetLogger()
 
-var BITPOWRCOINTICKER = map[string]string{
-	"BTC": "BTC",
-	"USDT_TRON": "USDT_TRON",
-	"USDT_BSC": "USDT_BSC",
-	"USDT": "USDT",
-}
+	ErrInvalidBankAccount = errors.New("unable to verify account number")
 
-var CHAINS = map[string]string {
-	"BTC": "BTC",
-	"USDT_TRON": "TRON",
-	"USDT_BSC": "BSC",
-	"USDT": "ETH",
-}
+	BTCDATA = []map[string]string{
+		{"coin_name": "btc", "coin_id": "bitcoin", "coin_symbol": "BTC"},
+	}
 
-var logger = log.New(os.Stdout, "api: ", log.Llongfile)
+	STABLECOINSLIST = []string{"USDT", "USDT_TRON", "USDT_BSC"}
+
+	BITPOWRCOINTICKER = map[string]string{
+		"BTC": "BTC",
+		"USDT_TRON": "USDT_TRON",
+		"USDT_BSC": "USDT_BSC",
+		"USDT": "USDT",
+	}
+
+	CHAINS = map[string]string {
+		"BTC": "BTC",
+		"USDT_TRON": "TRON",
+		"USDT_BSC": "BSC",
+		"USDT": "ETH",
+	}
+	
+	NETWORKS = map[string]string {
+		"BTC": "BTC",
+		"TRON": "USDT_TRON",
+		"BSC": "USDT_BSC",
+		"ETH": "USDT",
+	}
+)

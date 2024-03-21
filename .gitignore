@@ -3,3 +3,6 @@
 
 # Misc
 db.sql
+
+# auto reload directory
+tmp/
